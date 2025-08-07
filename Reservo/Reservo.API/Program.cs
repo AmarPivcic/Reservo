@@ -1,7 +1,11 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using Reservo.Services.Database;
+using Reservo.Services.Interfaces;
+using Reservo.Services.Services;
 using System.Text;
 
 
@@ -16,6 +20,13 @@ builder.Services.AddSwaggerGen();
 
 var jwtSecretKey =  builder.Configuration.GetValue<string>("JwtSettings:Secret");
 var keyBytes = Encoding.ASCII.GetBytes(jwtSecretKey);
+
+builder.Services.AddTransient<IAuthService, AuthService>(provider =>
+{
+    var context = provider.GetRequiredService<ReservoContext>();
+    var mapper = provider.GetRequiredService<IMapper>();
+    return new AuthService(jwtSecretKey, context, mapper);
+});
 
 builder.Services.AddAuthentication(options =>
 {
