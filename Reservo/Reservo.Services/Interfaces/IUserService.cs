@@ -14,6 +14,7 @@ namespace Reservo.Services.Interfaces
         Task<UserGetDTO> UpdateByToken(UserUpdateDTO request);
         Task UpdatePasswordByToken(UserUpdatePasswordDTO request);
         Task UpdateUsernameByToken (UserUpdateUsernameDTO request);
+        Task UpdateImageByToken(UserUpdateImageDTO request);
         Task ChangeActiveStatus(int id);
     }
 }

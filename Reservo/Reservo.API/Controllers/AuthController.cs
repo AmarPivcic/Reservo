@@ -32,7 +32,7 @@ namespace Reservo.API.Controllers
             return Ok(new { token });
         }
 
-        [HttpPost]
+        [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
             var token = Request.Headers["Authorizations"].ToString().Split(" ").Last();

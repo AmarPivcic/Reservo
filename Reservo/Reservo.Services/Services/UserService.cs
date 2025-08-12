@@ -93,6 +93,31 @@ namespace Reservo.Services.Services
             }
         }
 
+        public async Task UpdateImageByToken(UserUpdateImageDTO request)
+        {
+            var set = _context.Set<User>();
+            var entity = await set.FirstOrDefaultAsync(u => u.Username == request.Username);
+
+            if (entity != null)
+            {
+                if (request.Image != "")
+                {
+                    byte[] newImage = Convert.FromBase64String(request.Image);
+                    entity.Image = newImage;
+                }
+                else
+                {
+                    entity.Image = null;
+                }
+                await _context.SaveChangesAsync();
+            }
+
+            else
+            {
+                throw new UserException($"User {request.Username} doesn't exist.");
+            }
+        }
+
         public async Task UpdateUsernameByToken(UserUpdateUsernameDTO request)
         {
             if (request.Username == request.NewUsername)

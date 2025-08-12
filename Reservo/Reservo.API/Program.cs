@@ -5,17 +5,20 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using Reservo.Services.Database;
 using Reservo.Services.Interfaces;
+using Reservo.Services.Mapping;
 using Reservo.Services.Services;
 using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+
 builder.Services.AddTransient<IUserService, UserService>();
 
+builder.Services.AddAutoMapper(typeof(UserProfile).Assembly);
+
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
