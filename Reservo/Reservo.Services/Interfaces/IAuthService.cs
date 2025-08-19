@@ -1,4 +1,5 @@
 ﻿using Reservo.Model.DTOs.AuthToken;
+using Reservo.Model.DTOs.User;
 using Reservo.Model.Entities;
 using Reservo.Model.SearchObjects;
 using System;
@@ -11,7 +12,7 @@ namespace Reservo.Services.Interfaces
 {
     public interface IAuthService : IBaseService<AuthToken, AuthTokenGetDTO, AuthTokenInsertDTO, AuthTokenUpdateDTO, AuthTokenSearchObject>
     {
-        Task<string> Login(string username, string password, string role);
+        Task<string> Login(UserLoginDTO login);
         Task RevokeToken (string token);
         Task<bool> IsTokenRevoked (string token);
     }

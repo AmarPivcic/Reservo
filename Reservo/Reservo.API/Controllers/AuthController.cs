@@ -20,9 +20,10 @@ namespace Reservo.API.Controllers
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserLoginDTO credentials)
+        public async Task<IActionResult> Login([FromBody] UserLoginDTO request)
         {
-            var token = await _service.Login(credentials.Username, credentials.Password, credentials.Role);
+
+            var token = await _service.Login(request);
 
             if (token == null)
             {

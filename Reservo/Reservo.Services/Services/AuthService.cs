@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Reservo.Model.DTOs.AuthToken;
+using Reservo.Model.DTOs.User;
 using Reservo.Model.Entities;
 using Reservo.Model.SearchObjects;
 using Reservo.Model.Utilities;
@@ -23,16 +24,16 @@ namespace Reservo.Services.Services
             _secret = secret;
         }
 
-        public async Task<string> Login(string username, string password, string role)
+        public async Task<string> Login(UserLoginDTO request)
         {
-            var user = await _context.Users.Include(x => x.Role).FirstOrDefaultAsync(x => x.Username == username);
+            var user = await _context.Users.Include(x => x.Role).FirstOrDefaultAsync(x => x.Username == request.Username);
             if (user == null)
             {
                 throw new UserException("Incorrect login!");
             }
 
-            var hash = Hashing.GenerateHash(user.PasswordSalt, password);
-            if (hash != user.PasswordHash || user.Role.Name != role)
+            var hash = Hashing.GenerateHash(user.PasswordSalt, request.Password);
+            if (hash != user.PasswordHash || user.Role.Name != request.Role)
             {
                 throw new UserException("Incorrect login!");
             }

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Reservo.Model.Entities
+namespace Reservo.Model.DTOs.Event
 {
-    public class Event
+    public class EventGetDTO
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -15,15 +14,11 @@ namespace Reservo.Model.Entities
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public bool IsCanceled { get; set; }
-        [ForeignKey(nameof(Category))]
         public int CategoryId { get; set; }
-        public Category Category { get; set; }
-        [ForeignKey(nameof(Venue))]
+        public string CategoryName { get; set; }
         public int VenueId { get; set; }
-        public Venue Venue { get; set; }
-        [ForeignKey(nameof(User))]
-        public int OrganizerId { get; set; }
-        public User User { get; set; }
-
+        public string VenueName { get; set; }
+        public string OrganizerId { get; set; }
+        public string OrganizerName { get; set; }
     }
 }
