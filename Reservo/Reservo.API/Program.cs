@@ -1,4 +1,5 @@
 using AutoMapper;
+using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -10,8 +11,11 @@ using Reservo.Services.Services;
 using System.Text;
 
 
+Env.Load(@"../.env");
+
 var builder = WebApplication.CreateBuilder(args);
 
+var jwtSecretFromEnv = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 
 builder.Services.AddTransient<IUserService, UserService>();
 
@@ -22,7 +26,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var jwtSecretKey =  builder.Configuration.GetValue<string>("JwtSettings:Secret");
+var jwtSecretKey = !string.IsNullOrEmpty(jwtSecretFromEnv)
+    ? jwtSecretFromEnv 
+    : builder.Configuration.GetValue<string>("JwtSettings:Secret");
 var keyBytes = Encoding.ASCII.GetBytes(jwtSecretKey);
 
 builder.Services.AddTransient<IAuthService, AuthService>(provider =>

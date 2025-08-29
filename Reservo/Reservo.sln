@@ -5,9 +5,9 @@ VisualStudioVersion = 17.10.34928.147
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reservo.API", "Reservo.API\Reservo.API.csproj", "{6857299B-D565-41D3-8AF7-E7914FEB4ADF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reservo.Services", "Reservo.Services\Reservo.Services.csproj", "{59663D58-CC0D-4A73-A92C-F51290189CD0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reservo.Services", "Reservo.Services\Reservo.Services.csproj", "{59663D58-CC0D-4A73-A92C-F51290189CD0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reservo.Model", "Reservo.Model\Reservo.Model.csproj", "{4D186980-CF7D-4596-B54D-F854D18B12BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reservo.Model", "Reservo.Model\Reservo.Model.csproj", "{4D186980-CF7D-4596-B54D-F854D18B12BD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -646,6 +646,5 @@ FodyWeavers.xsd
 # End of https://www.toptal.com/developers/gitignore/api/flutter,aspnetcore,visualstudio,visualstudiocode,android
 
 # Custom ignore
-FixMyCar.Services/Database/Migrations
-**/.env
+*.env
 .env
