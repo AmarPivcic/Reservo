@@ -11,7 +11,7 @@ namespace Reservo.Model.Entities
     {
         public int Id { get; set; }
         public string QRCode { get; set; }
-        public bool IsUsed { get; set; }
+        public string State { get; set; }
         [ForeignKey(nameof(OrderDetail))]
         public int OrderDetailId { get; set; }
         public OrderDetail OrderDetail { get; set; }

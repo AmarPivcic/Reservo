@@ -14,7 +14,7 @@ namespace Reservo.Model.Entities
         public string Description { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public bool IsCanceled { get; set; }
+        public string State { get; set; }
         [ForeignKey(nameof(Category))]
         public int CategoryId { get; set; }
         public Category Category { get; set; }
@@ -24,6 +24,8 @@ namespace Reservo.Model.Entities
         [ForeignKey(nameof(User))]
         public int OrganizerId { get; set; }
         public User User { get; set; }
+
+        public ICollection<TicketType> TicketTypes { get; set; } = new List<TicketType>();
 
     }
 }

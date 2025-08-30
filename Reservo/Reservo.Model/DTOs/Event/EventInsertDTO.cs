@@ -1,4 +1,5 @@
-﻿using Reservo.Model.Entities;
+﻿using Reservo.Model.DTOs.TicketType;
+using Reservo.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -17,5 +18,6 @@ namespace Reservo.Model.DTOs.Event
         public int CategoryId { get; set; }
         public int VenueId { get; set; }
         public int OrganizerId { get; set; }
+        public List<TicketTypeInsertDTO> TicketTypes { get; set; } = new();
     }
 }

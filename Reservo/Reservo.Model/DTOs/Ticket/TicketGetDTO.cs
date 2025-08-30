@@ -12,7 +12,7 @@ namespace Reservo.Model.DTOs.Ticket
     {
         public int Id { get; set; }
         public string QRCode { get; set; }
-        public bool IsUsed { get; set; }
+        public string State { get; set; }
         public int OrderDetailId { get; set; }
     }
 }

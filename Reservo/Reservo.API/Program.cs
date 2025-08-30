@@ -8,6 +8,7 @@ using Reservo.Services.Database;
 using Reservo.Services.Interfaces;
 using Reservo.Services.Mapping;
 using Reservo.Services.Services;
+using Reservo.Services.StateMachineServices.EventStateMachine;
 using System.Text;
 
 
@@ -18,6 +19,16 @@ var builder = WebApplication.CreateBuilder(args);
 var jwtSecretFromEnv = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 
 builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IEventService, EventService>();
+
+builder.Services.AddTransient<BaseEventState>();
+builder.Services.AddTransient<InitialEventState>();
+builder.Services.AddTransient<DraftEventState>();
+builder.Services.AddTransient<ActiveEventState>();
+builder.Services.AddTransient<CancelledEventState>();
+builder.Services.AddTransient<CompletedEventState>();
+
+
 
 builder.Services.AddAutoMapper(typeof(UserProfile).Assembly);
 
