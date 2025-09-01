@@ -143,7 +143,7 @@ namespace Reservo.API.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsCanceled = table.Column<bool>(type: "bit", nullable: false),
+                    State = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     VenueId = table.Column<int>(type: "int", nullable: false),
                     OrganizerId = table.Column<int>(type: "int", nullable: false)
@@ -281,7 +281,7 @@ namespace Reservo.API.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     QRCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsUsed = table.Column<bool>(type: "bit", nullable: false),
+                    State = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OrderDetailId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

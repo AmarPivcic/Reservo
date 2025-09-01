@@ -20,7 +20,7 @@ namespace Reservo.API.Controllers
         [HttpPost()]
         public async override Task<UserGetDTO> Insert(UserInsertDTO request)
         {
-            request.RoleId = 0;
+            request.RoleId = 2;
             return await (_service as IUserService).Insert(request);
         }
 
@@ -31,10 +31,10 @@ namespace Reservo.API.Controllers
             return await (_service as IUserService).Insert(request); 
         }
 
-        [HttpPost("InsertClient")]
-        public async Task<UserGetDTO> InsertClient(UserInsertDTO request)
+        [HttpPost("InsertOrganizer")]
+        public async Task<UserGetDTO> InsertOrganizer(UserInsertDTO request)
         {
-            request.RoleId = 2;
+            request.RoleId = 3;
             return await (_service as IUserService).Insert(request);
         }
 

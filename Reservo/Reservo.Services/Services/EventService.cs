@@ -68,5 +68,39 @@ namespace Reservo.Services.Services
             var state = _baseEventState.CreateState(entity?.State ?? "initial");
             return await state.AllowedActions();
         }
+
+        public override IQueryable<Event> AddFilter(IQueryable<Event> query, EventSearchObject? search = null)
+        {
+            if (search == null)
+                return query;
+
+            if (search.OrganizerId.HasValue)
+                query = query.Where(e => e.OrganizerId == search.OrganizerId);
+
+            if (!string.IsNullOrWhiteSpace(search.State))
+                query = query.Where(e => e.State == search.State);
+            else
+                query = query.Where(e => e.State == "active");
+
+            if (!string.IsNullOrWhiteSpace(search.City))
+                query = query.Where(e => e.Venue.City.Name.Contains(search.City));
+
+            if (!string.IsNullOrWhiteSpace(search.Venue))
+                query = query.Where(e => e.Venue.Name.Contains(search.Venue));
+
+            if (search.Date.HasValue)
+                query = query.Where(e => (e.StartDate == search.Date) || 
+                (e.StartDate <= search.Date && e.EndDate >= search.Date));
+
+            if (!string.IsNullOrWhiteSpace(search.Name))
+                query = query.Where(e => e.Name.Contains(search.Name));
+
+            return query.OrderBy(e => e.StartDate);
+        }
+
+        public override IQueryable<Event> AddInclude(IQueryable<Event> query, EventSearchObject? search = null)
+        {
+            return query.Include(e => e.Venue).ThenInclude(v => v.City);
+        }
     }
 }

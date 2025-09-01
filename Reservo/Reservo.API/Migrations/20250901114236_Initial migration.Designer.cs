@@ -12,7 +12,7 @@ using Reservo.Services.Database;
 namespace Reservo.API.Migrations
 {
     [DbContext(typeof(ReservoContext))]
-    [Migration("20250829145324_Initial migration")]
+    [Migration("20250901114236_Initial migration")]
     partial class Initialmigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -104,9 +104,6 @@ namespace Reservo.API.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsCanceled")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -116,6 +113,10 @@ namespace Reservo.API.Migrations
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("VenueId")
                         .HasColumnType("int");
@@ -252,13 +253,14 @@ namespace Reservo.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("bit");
-
                     b.Property<int>("OrderDetailId")
                         .HasColumnType("int");
 
                     b.Property<string>("QRCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("State")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -503,7 +505,7 @@ namespace Reservo.API.Migrations
             modelBuilder.Entity("Reservo.Model.Entities.TicketType", b =>
                 {
                     b.HasOne("Reservo.Model.Entities.Event", "Event")
-                        .WithMany()
+                        .WithMany("TicketTypes")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -539,6 +541,11 @@ namespace Reservo.API.Migrations
                         .IsRequired();
 
                     b.Navigation("City");
+                });
+
+            modelBuilder.Entity("Reservo.Model.Entities.Event", b =>
+                {
+                    b.Navigation("TicketTypes");
                 });
 
             modelBuilder.Entity("Reservo.Model.Entities.Order", b =>

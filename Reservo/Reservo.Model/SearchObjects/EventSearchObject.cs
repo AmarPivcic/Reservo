@@ -8,9 +8,12 @@ namespace Reservo.Model.SearchObjects
 {
     public class EventSearchObject : BaseSearchObject
     {
+        public int? OrganizerId { get; set; }
+        public string? State { get; set; }
+        public string? City { get; set; }
+        public string? Venue { get; set; }
         public string? Name { get; set; }
-        public string? ContainsName { get; set; }
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
+        public DateTime? Date { get; set; }
+
     }
 }

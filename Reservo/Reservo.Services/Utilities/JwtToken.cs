@@ -20,8 +20,8 @@ namespace Reservo.Services.Utilities
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.NameIdentifier, user.Username),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Role, user.Role.Name)
             }),
                 Expires = DateTime.Now.AddDays(7),

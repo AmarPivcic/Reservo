@@ -24,7 +24,7 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
     return headers;
   }
 
-    Future<SearchResult<T>> get({
+  Future<SearchResult<T>> get({
     String customEndpoint = '',
     Map<String, dynamic>? filter,
     required T Function(Map<String, dynamic>) fromJson,

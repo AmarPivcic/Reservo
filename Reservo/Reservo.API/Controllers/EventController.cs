@@ -1,0 +1,51 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Reservo.Model.DTOs.Event;
+using Reservo.Model.Entities;
+using Reservo.Model.SearchObjects;
+using Reservo.Model.Utilities;
+using Reservo.Services.Interfaces;
+using System.Security.Claims;
+
+namespace Reservo.API.Controllers
+{
+    public class EventController : BaseController<Event, EventGetDTO, EventInsertDTO, EventUpdateDTO, EventSearchObject>
+    {
+        public EventController(IBaseService<Event, EventGetDTO, EventInsertDTO, EventUpdateDTO, EventSearchObject> service, ILogger<BaseController<Event, EventGetDTO, EventInsertDTO, EventUpdateDTO, EventSearchObject>> logger) : base(service, logger)
+        {
+        }
+
+        [Authorize(Roles ="Organizer")]
+        [HttpGet("GetByToken")]
+        public async Task<PagedResult<EventGetDTO>> GetByToken([FromQuery] EventSearchObject? search = null)
+        {
+            search ??= new EventSearchObject();
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+            {
+                search.OrganizerId = userId;
+            }
+
+            return await (_service as IEventService).Get(search);
+        }
+
+        [HttpPatch("{id}/Activate")]
+        public async Task<ActionResult<EventGetDTO>> Activate(int id)
+        {
+            return await (_service as IEventService).Activate(id);
+        }
+
+        [HttpPatch("{id}/Cancel")]
+        public async Task<ActionResult<EventGetDTO>> Cancel(int id)
+        {
+            return await (_service as IEventService).Cancel(id);
+        }
+
+        [HttpGet("{id}/AllowedActions")]
+        public async Task<List<string>> AllowedActions(int id)
+        {
+            return await (_service as IEventService).AllowedActions(id);
+        }
+    }
+}

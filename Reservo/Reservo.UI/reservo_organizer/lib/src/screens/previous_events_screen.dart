@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:reservo_organizer/src/screens/master_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-const HomeScreen({super.key});
+class PreviousEventsScreen extends StatefulWidget {
+const PreviousEventsScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<PreviousEventsScreen> createState() => _PreviousEventsScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _PreviousEventsScreenState extends State<PreviousEventsScreen> {
   @override
   Widget build(BuildContext context) {
-    return MasterScreen(
+     return MasterScreen(
       showBackButton: false,
       child: Center(
         child: Text(
-          "Events",
+          "Previous Events",
           style: Theme.of(context).textTheme.headlineMedium,
         ),
       ),
