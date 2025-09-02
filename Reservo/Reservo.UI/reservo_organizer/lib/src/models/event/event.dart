@@ -10,8 +10,9 @@ class Event{
   DateTime startDate;
   DateTime endDate;
   String state;
-  String categoryName;
+  String? categoryName;
   String venueName;
+  String cityName;
 
   Event(
     this.id,
@@ -21,7 +22,8 @@ class Event{
     this.endDate,
     this.state,
     this.categoryName,
-    this.venueName
+    this.venueName,
+    this.cityName
   );
 
   factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:reservo_organizer/src/models/event/event.dart';
 import 'package:reservo_organizer/src/models/search_result.dart';
 import 'package:reservo_organizer/src/providers/base_provider.dart';
@@ -48,7 +50,6 @@ class EventProvider extends BaseProvider<Event, Event>
         fromJson: (json) => Event.fromJson(json),
         customEndpoint: 'GetByToken'
       );
-      
     events = searchResult.result;
     countOfEvents = searchResult.count;
     isLoading = false;
@@ -60,4 +61,5 @@ class EventProvider extends BaseProvider<Event, Event>
       notifyListeners();
     }
   }
+
 }

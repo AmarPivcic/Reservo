@@ -30,10 +30,11 @@ class AuthProvider extends BaseProvider<AuthProvider, AuthProvider>
       );
 
       if (response.statusCode == 200) {
-        final token = response.body;
-        await storage.write(key: 'jwt:token', value: token);
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        final token = data['token']; // only the token, not the whole JSON
+        await storage.write(key: 'jwt_token', value: token);
         isLoggedIn = true;
-      } else {
+      }else {
         handleHttpError(response);
       }
     } on CustomException {

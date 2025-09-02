@@ -11,7 +11,8 @@ namespace Reservo.API.Controllers
 {
     public class EventController : BaseController<Event, EventGetDTO, EventInsertDTO, EventUpdateDTO, EventSearchObject>
     {
-        public EventController(IBaseService<Event, EventGetDTO, EventInsertDTO, EventUpdateDTO, EventSearchObject> service, ILogger<BaseController<Event, EventGetDTO, EventInsertDTO, EventUpdateDTO, EventSearchObject>> logger) : base(service, logger)
+
+        public EventController(IEventService service, ILogger<BaseController<Event, EventGetDTO, EventInsertDTO,EventUpdateDTO,EventSearchObject>> logger) : base(service, logger)
         {
         }
 

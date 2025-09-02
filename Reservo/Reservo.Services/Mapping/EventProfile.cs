@@ -16,7 +16,8 @@ namespace Reservo.Services.Mapping
             CreateMap<Event, EventGetDTO>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
                 .ForMember(dest => dest.VenueName, opt => opt.MapFrom(src => src.Venue.Name))
-                .ForMember(dest => dest.OrganizerName, opt => opt.MapFrom(src => src.User.Name));
+                .ForMember(dest => dest.OrganizerName, opt => opt.MapFrom(src => src.User.Name))
+                .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.Venue.City.Name));
         }
     }
 }

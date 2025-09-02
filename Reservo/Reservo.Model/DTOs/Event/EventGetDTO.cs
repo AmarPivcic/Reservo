@@ -20,5 +20,6 @@ namespace Reservo.Model.DTOs.Event
         public string VenueName { get; set; }
         public string OrganizerId { get; set; }
         public string OrganizerName { get; set; }
+        public string CityName { get; set; }
     }
 }

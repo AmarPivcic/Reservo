@@ -34,11 +34,11 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
           filter != null ? Uri(queryParameters: filter).query : '';
       String url =
           '$baseUrl/$endpoint${customEndpoint.isNotEmpty ? '/$customEndpoint' : ''}${queryString.isNotEmpty ? '?$queryString' : ''}';
+
       final response = await http.get(
         Uri.parse(url),
         headers: await createHeaders(),
       );
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         List<T> results =

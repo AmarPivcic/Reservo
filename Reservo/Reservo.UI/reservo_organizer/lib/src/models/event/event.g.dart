@@ -13,8 +13,9 @@ Event _$EventFromJson(Map<String, dynamic> json) => Event(
       DateTime.parse(json['startDate'] as String),
       DateTime.parse(json['endDate'] as String),
       json['state'] as String,
-      json['categoryName'] as String,
+      json['categoryName'] ?? '' as String,
       json['venueName'] as String,
+      json['cityName'] as String
     );
 
 Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
@@ -26,4 +27,5 @@ Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
       'state': instance.state,
       'categoryName': instance.categoryName,
       'venueName': instance.venueName,
+      'cityName': instance.cityName
     };
