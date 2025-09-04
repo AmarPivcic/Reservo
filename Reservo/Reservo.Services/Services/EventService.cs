@@ -89,8 +89,12 @@ namespace Reservo.Services.Services
                 query = query.Where(e => e.Venue.Name.Contains(search.Venue));
 
             if (search.Date.HasValue)
-                query = query.Where(e => (e.StartDate == search.Date) || 
-                (e.StartDate <= search.Date && e.EndDate >= search.Date));
+            {
+                var date = search.Date.Value.Date;
+                query = query.Where(e =>
+                    (e.StartDate.Date <= date && e.EndDate.Date >= date)
+                );
+            }
 
             if (!string.IsNullOrWhiteSpace(search.Name))
                 query = query.Where(e => e.Name.Contains(search.Name));

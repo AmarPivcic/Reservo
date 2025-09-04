@@ -13,12 +13,13 @@ namespace Reservo.Model.DTOs.Event
         public string Description { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public string? Image { get; set; }
         public string State { get; set; }
         public int CategoryId { get; set; }
         public string CategoryName { get; set; }
         public int VenueId { get; set; }
         public string VenueName { get; set; }
-        public string OrganizerId { get; set; }
+        public int OrganizerId { get; set; }
         public string OrganizerName { get; set; }
         public string CityName { get; set; }
     }

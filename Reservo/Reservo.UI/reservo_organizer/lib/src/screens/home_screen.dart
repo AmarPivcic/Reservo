@@ -1,9 +1,15 @@
+import 'dart:convert';
+import 'dart:ui';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:reservo_organizer/src/models/event/event.dart';
 import 'package:reservo_organizer/src/providers/event_provider.dart';
 import 'package:reservo_organizer/src/screens/master_screen.dart';
+import 'package:intl/intl.dart';
+import 'package:reservo_organizer/src/screens/new_event_screen.dart';
 
 class HomeScreen extends StatefulWidget {
 const HomeScreen({super.key});
@@ -100,8 +106,6 @@ void _clearFilters() {
                       padding: const EdgeInsets.all(16.0),
                       child: ep.isLoading
                             ? const Center(child: CircularProgressIndicator())
-                            : ep.events.isEmpty
-                            ? const Center(child: Text("No events found."))
                             : _EventGrid(events: ep.events)
                     ),
                   )
@@ -113,7 +117,6 @@ void _clearFilters() {
       )
     );
   }
-
 }
 
 class _FilterPanel extends StatelessWidget {
@@ -179,7 +182,7 @@ class _FilterPanel extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Text(
                   selectedDate == null ? "Any date" : 
-                  "${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}",
+                  DateFormat('dd.MM.yyyy').format(selectedDate!),
                   ),
                 ),
               ),
@@ -213,32 +216,69 @@ class _EventGrid extends StatelessWidget {
   const _EventGrid({required this.events});
 
   final List<Event> events;
-
-  int _calcCrossAxisCount(double width) {
-    if (width >= 1400) return 4;
-    if (width >= 1400) return 4;
-    if (width >= 800) return 2;
-    return 1;
-  }
   
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (_, constraints) {
-      final cols = _calcCrossAxisCount(constraints.maxWidth);
       return GridView.builder(
-        itemCount: events.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: cols,
+        itemCount: events.length + 1,
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 340,
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 1.7
+          childAspectRatio: 1
         ),
-         itemBuilder: (_, index) => _EventCard(event: events[index]),
+         itemBuilder: (_, index) {
+          if(index < events.length) {
+            return SizedBox(
+              width: 340,
+              child: _EventCard(event: events[index])
+            );
+          }
+          else {
+            return SizedBox(
+              width: 340,
+              child: _AddEventCard(),
+            );
+          }
+         }
       );
     });
   }
 }
 
+
+class _AddEventCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder:(context) => const NewEventScreen())
+            );
+        },
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.add_circle_rounded, size: 36),
+              const SizedBox(height: 8),
+              Text(
+                "Add new event",
+                style: Theme.of(context).textTheme.titleMedium,
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _EventCard extends StatelessWidget{
 
@@ -255,8 +295,13 @@ class _EventCard extends StatelessWidget{
     final venue = event.venueName;
     final city = event.cityName;
     final startDate = event.startDate;
-    final dateText = startDate.toString();
+    final dateText = DateFormat('dd.MM.yyyy').format(startDate);
+    Uint8List? imageBytes;
 
+    if(event.image != null && event.image!.isNotEmpty)
+    {
+      imageBytes = base64Decode(event.image!);
+    }
 
     return Card(
       elevation: 4,
@@ -267,36 +312,54 @@ class _EventCard extends StatelessWidget{
           //TODO: Navigate to event edit screen
         },
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+              child: event.image != null && event.image!.isNotEmpty
+              ? Image.memory(
+                imageBytes!,
+                width: double.infinity,
+                height: 160,
+                fit: BoxFit.cover,
+                )
+              : Image.asset(
+                'lib/src/assets/images/LogoLight.png',
+                height: 160,
+                fit: BoxFit.cover,
+              )
+            ),
+            const Spacer(),
             Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: Text(
-                    name,
-                    style: Theme.of(context).textTheme.titleMedium,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  )
+                Text(
+                  name,
+                  style: Theme.of(context).textTheme.titleMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 )
               ],
             ),
             const SizedBox(height: 8),
             Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.location_on_outlined, size: 16),
                 const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
+                 Text(
                     "$venue${city.isNotEmpty ? ' - $city' : ''}",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                  )
-                )
+                  ) 
               ],
             ),
             const SizedBox(height: 6),
             Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.calendar_today_outlined, size: 16),
                 const SizedBox(width: 6),
@@ -306,12 +369,10 @@ class _EventCard extends StatelessWidget{
             const Spacer(),
             Align(
               alignment: Alignment.bottomRight,
-              child: TextButton.icon(
-                onPressed: () {
-                  //TODO: navigate to manage tickets screen
-                }, 
-                icon: Icon(Icons.edit_outlined), 
-                label: Text("Manage")),
+              child: Container(
+                margin: const EdgeInsets.all(8),
+                child: Icon(Icons.edit_outlined)
+              )         
             )
           ],
         ),

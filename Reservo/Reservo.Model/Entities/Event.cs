@@ -14,6 +14,7 @@ namespace Reservo.Model.Entities
         public string Description { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public byte[]? Image { get; set; }
         public string State { get; set; }
         [ForeignKey(nameof(Category))]
         public int CategoryId { get; set; }

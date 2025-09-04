@@ -41,7 +41,7 @@ class EventProvider extends BaseProvider<Event, Event>
       queryParams['Venue'] = venueFilter;
     }
     if(date != null){
-      queryParams['Date'] = date;
+      queryParams['Date'] = date.toIso8601String();
     }
 
     try {

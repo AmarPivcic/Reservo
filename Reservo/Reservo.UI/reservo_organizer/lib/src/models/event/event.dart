@@ -13,6 +13,7 @@ class Event{
   String? categoryName;
   String venueName;
   String cityName;
+  String? image;
 
   Event(
     this.id,
@@ -23,7 +24,8 @@ class Event{
     this.state,
     this.categoryName,
     this.venueName,
-    this.cityName
+    this.cityName,
+    this.image
   );
 
   factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);

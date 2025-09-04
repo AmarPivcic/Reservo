@@ -12,8 +12,8 @@ using Reservo.Services.Database;
 namespace Reservo.API.Migrations
 {
     [DbContext(typeof(ReservoContext))]
-    [Migration("20250901114236_Initial migration")]
-    partial class Initialmigration
+    [Migration("20250903120935_Generate database")]
+    partial class Generatedatabase
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -60,6 +60,9 @@ namespace Reservo.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<byte[]>("Image")
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -103,6 +106,9 @@ namespace Reservo.API.Migrations
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("Image")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
