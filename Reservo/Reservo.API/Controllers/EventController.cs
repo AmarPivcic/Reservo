@@ -31,6 +31,16 @@ namespace Reservo.API.Controllers
             return await (_service as IEventService).Get(search);
         }
 
+        [HttpPost("Insert")]
+        public async Task<EventGetDTO> Insert(EventInsertDTO request)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+                request.OrganizerId = userId;
+
+            return await (_service as IEventService).Insert(request);
+        }
+
         [HttpPatch("{id}/Activate")]
         public async Task<ActionResult<EventGetDTO>> Activate(int id)
         {

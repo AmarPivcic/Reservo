@@ -18,7 +18,7 @@ namespace Reservo.Model.DTOs.Event
         public string? Image { get; set; }
         public int CategoryId { get; set; }
         public int VenueId { get; set; }
-        public int OrganizerId { get; set; }
+        public int? OrganizerId { get; set; }
         public List<TicketTypeInsertDTO> TicketTypes { get; set; } = new();
     }
 }

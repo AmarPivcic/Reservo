@@ -20,6 +20,9 @@ var jwtSecretFromEnv = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IEventService, EventService>();
+builder.Services.AddTransient<ICityService, CityService>();
+builder.Services.AddTransient<IVenueService, VenueService>();
+builder.Services.AddTransient<ICategoryService, CategoryService>();
 
 builder.Services.AddTransient<BaseEventState>();
 builder.Services.AddTransient<InitialEventState>();
