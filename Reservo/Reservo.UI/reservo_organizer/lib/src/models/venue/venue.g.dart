@@ -12,7 +12,7 @@ Venue _$VenueFromJson(Map<String, dynamic> json) => Venue(
       json['address'] as String,
       (json['capacity'] as num).toInt(),
       json['description'] as String?,
-      json['cityName'] as String,
+      json['cityName'] as String?,
     );
 
 Map<String, dynamic> _$VenueToJson(Venue instance) => <String, dynamic>{

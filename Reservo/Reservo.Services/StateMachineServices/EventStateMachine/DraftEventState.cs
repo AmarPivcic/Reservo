@@ -18,11 +18,11 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
         {
         }
 
-        public async override Task<EventGetDTO> Activate(Event entity)
+        public async override Task<EventGetDTO> Activate(int id)
         {
-            bool validate = !string.IsNullOrWhiteSpace(entity.Name) && !string.IsNullOrWhiteSpace(entity.Description)
-                            && entity.TicketTypes.Count > 0;
-            if (validate)
+            var entity = _context.Events.FirstOrDefault(e => e.Id == id);
+
+            if (entity != null)
             {
                 entity.State = "active";
 
@@ -32,7 +32,7 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
             }
             else
             {
-                throw new UserException("Please insert all event details before activating the event!");
+                throw new UserException("Event not found!");
             }
         }
     }

@@ -9,7 +9,7 @@ class Venue {
   String address;
   int capacity;
   String? description;
-  String cityName;
+  String? cityName;
 
   Venue(
     this.id,

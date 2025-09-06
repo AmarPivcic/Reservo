@@ -38,7 +38,7 @@ namespace Reservo.Services.Services
             {
                 var state = _baseEventState.CreateState(entity.State);
 
-                return await state.Activate(entity);
+                return await state.Activate(entity.Id);
             }
             else
             {

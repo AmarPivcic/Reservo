@@ -35,7 +35,7 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
             throw new UserException("Action not allowed.");
         }
 
-        public virtual async Task<EventGetDTO> Activate(Event entity)
+        public virtual async Task<EventGetDTO> Activate(int id)
         {
             throw new UserException("Action not allowed.");
         }

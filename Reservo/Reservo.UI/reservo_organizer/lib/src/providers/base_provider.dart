@@ -39,6 +39,7 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
         Uri.parse(url),
         headers: await createHeaders(),
       );
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         List<T> results =
@@ -60,9 +61,10 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
     }
   }
 
-  Future<void> insert(TInsertUpdate item,
-      {String customEndpoint = '',
-      required Map<String, dynamic> Function(TInsertUpdate) toJson}) async {
+  Future<void> insert(
+    TInsertUpdate item,
+    {String customEndpoint = '',
+    required Map<String, dynamic> Function(TInsertUpdate) toJson}) async {
     try {
       final response = await http.post(
         Uri.parse(
@@ -83,6 +85,50 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
           "Can't reach the server. Please check your internet connection.");
     }
   }
+
+  Future<T> insertResponse<T, TInsertUpdate>(
+  TInsertUpdate item, {
+  String customEndpoint = '',
+  required Map<String, dynamic> Function(TInsertUpdate) toJson,
+  required T Function(Map<String, dynamic>) fromJson,
+}) async {
+  try {
+    final jsonBody = jsonEncode(toJson(item));
+    // ignore: avoid_print
+    print("Sending JSON: $jsonBody");
+     final uri = Uri.parse('$baseUrl/$endpoint${customEndpoint.isNotEmpty ? '/$customEndpoint' : ''}');
+      // ignore: avoid_print
+      print(uri.toString());
+    final response = await http.post(
+      Uri.parse(
+          '$baseUrl/$endpoint${customEndpoint.isNotEmpty ? '/$customEndpoint' : ''}'),
+      headers: await createHeaders(),
+      body: jsonEncode(toJson(item)),
+    );
+
+    // ignore: avoid_print
+    print(response.statusCode);
+    // ignore: avoid_print
+
+    print(response.body); 
+
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final created = fromJson(data);
+      notifyListeners();
+      return created;
+    } else {
+      handleHttpError(response);
+      throw Exception("Insert failed");
+    }
+  } on CustomException {
+    rethrow;
+  } catch (e) {
+    throw CustomException(
+        "Can't reach the server. Please check your internet connection.");
+  }
+}
 
   Future<void> update(
       {required int id,

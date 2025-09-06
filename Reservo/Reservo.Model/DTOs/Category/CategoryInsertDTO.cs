@@ -9,5 +9,6 @@ namespace Reservo.Model.DTOs.Category
     public class CategoryInsertDTO
     {
         public string Name { get; set; }
+        public string? Image { get; set; }
     }
 }

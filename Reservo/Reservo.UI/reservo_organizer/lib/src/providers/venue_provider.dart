@@ -14,9 +14,9 @@ class VenueProvider extends BaseProvider<Venue, Venue> {
     isLoading = true;
     notifyListeners();
 
-    Map<String, dynamic> queryParams = {};
-
-    queryParams['CityID'] = cityId;
+    final queryParams = {
+      "CityID": cityId.toString()
+    };
     try {
       SearchResult<Venue> searchResult = await get(
         filter: queryParams,

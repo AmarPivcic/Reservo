@@ -32,7 +32,7 @@ namespace Reservo.API.Controllers
         }
 
         [HttpPost("Insert")]
-        public async Task<EventGetDTO> Insert(EventInsertDTO request)
+        public async Task<EventGetDTO> Insert([FromBody] EventInsertDTO request)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))

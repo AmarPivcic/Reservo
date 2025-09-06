@@ -1,11 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:reservo_organizer/src/models/event/event_insert_update.dart';
 import 'package:reservo_organizer/src/models/ticket_type/ticket_type.dart';
-import 'package:reservo_organizer/src/models/venue/venue.dart';
+import 'package:reservo_organizer/src/models/ticket_type/ticket_type_insert.dart';
 import 'package:reservo_organizer/src/providers/category_provider.dart';
 import 'package:reservo_organizer/src/providers/city_provider.dart';
+import 'package:reservo_organizer/src/providers/event_provider.dart';
 import 'package:reservo_organizer/src/providers/venue_provider.dart';
+import 'package:reservo_organizer/src/screens/event_details_screen.dart';
 import 'package:reservo_organizer/src/screens/master_screen.dart';
 
 
@@ -27,7 +30,6 @@ class _NewEventScreenState extends State<NewEventScreen>{
   String? _eventImage; 
   DateTime? _eventStartDate;
   DateTime? _eventEndDate;
-  TicketType? newTicket;
   String? _image;
   int? _cityId;
 
@@ -46,7 +48,13 @@ void initState() {
 
 void _addTicketType() {
   setState(() {
-    _ticketTypes.add(newTicket!);
+    _ticketTypes.add(TicketType(
+      0, 
+      "",
+      null,
+      0,
+      0,
+      ));
   });
 }
 
@@ -58,32 +66,41 @@ void _removeTicketType(int index) {
 
 Future<void> _fetchVenuesForCity(int cityId) async {
   final vp = context.read<VenueProvider>();
-  vp.getVenuesByCity(cityId);
-
-  setState(() {
-      _venueId = null;
-    });
+  await vp.getVenuesByCity(cityId);
 }
 
-void _saveEvent() {
+void _saveEvent() async {
   if (!_formKey.currentState!.validate()) return;
 
   _formKey.currentState!.save();
 
-  final eventData = {
-    "name": _eventName,
-    "description": _eventDescription,
-    "startDate": _eventStartDate?.toIso8601String(),
-    "endDate": _eventEndDate?.toIso8601String(),
-    "categoryId": _categoryId,
-    "venueId": _venueId,
-    "image": _image
-  };
+  final ep = context.read<EventProvider>();
 
-  // Navigator.push(
-  //   context, 
-  //   MaterialPageRoute(builder: (_) =>)
-  //   );
+
+  final eventData = EventInsertUpdate(
+    name: _eventName!,
+    description: _eventDescription,
+    startDate: _eventStartDate!,
+    endDate: _eventEndDate!,
+    categoryId: _categoryId!,
+    venueId: _venueId!,
+    image: _image,
+    ticketTypes: _ticketTypes.map((t) => TicketTypeInsert(
+      t.name,
+      t.description,
+      t.price,
+      t.quantity,
+    )).toList(),
+    );
+
+  final newEvent = await ep.insertEvent(eventData);
+    
+  Navigator.push(
+    context, 
+    MaterialPageRoute(
+      builder: (_) => EventDetailsScreen(eventData: newEvent)
+    )
+  );
 }
 
 Future<void> _pickStartDate() async {
@@ -170,7 +187,7 @@ Future<void> _pickStartDate() async {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Evenjt Info", style: Theme.of(context).textTheme.headline6),
+              Text("Event Info", style: Theme.of(context).textTheme.headline6),
               TextFormField(
                 decoration: const InputDecoration(labelText: "Event Name"),
                 validator: (v) =>
@@ -203,8 +220,128 @@ Future<void> _pickStartDate() async {
                         value: c.id,
                         child: Text(c.name)
                        )).toList(),
-                onChanged: (val) => _fetchVenuesForCity(val!),
+                onChanged: (val) async {
+                  setState(() {
+                    _cityId = val;
+                    _venueId = null;
+                  });
+                  await _fetchVenuesForCity(val!);
+                },
                 validator: (v) => v == null ? "Required" : null
+              ),
+
+              DropdownButtonFormField<int>(
+                decoration: const InputDecoration(labelText: "Venue"),
+                value: _venueId,
+                items: venueProvider.venues
+                        .map((v) => DropdownMenuItem<int>(
+                         value: v.id,
+                         child: Text(v.name),
+                        )).toList(),
+                onChanged: _cityId == null
+                    ? null
+                    : (val) => setState(() => _venueId = val),
+                validator: (v) => v == null ? "Required" : null,
+              ),
+
+              ListTile(
+                title: Text(
+                  _eventStartDate == null
+                      ? "Select event start date and time"
+                      : "Start: $_eventStartDate",
+                ),
+                trailing: const Icon(Icons.calendar_today),
+                onTap: _pickStartDate,
+              ),
+
+              ListTile(
+                title: Text(
+                  _eventEndDate == null
+                        ? "Select event end date and time"
+                        : "Start: $_eventEndDate"
+                ),
+                trailing: const Icon(Icons.calendar_today),
+                onTap: _pickEndDate,
+                enabled: _eventStartDate != null,
+              ),
+
+              const SizedBox(height: 20),
+
+              Text("Ticket Types", style: Theme.of(context).textTheme.headline6,),
+
+              Column(
+                children: _ticketTypes.asMap().entries.map((e) {
+                  int index = e.key;
+                  var ticket = e.value;
+
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            decoration: const InputDecoration(labelText: "Ticket Name"),
+                            validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                            onChanged: (value) => ticket.name = value,
+                          ),
+
+                          TextFormField(
+                            decoration: const InputDecoration(labelText: "Description (optional)"),
+                            onChanged: (value) => ticket.description = value,
+                          ),
+
+                          TextFormField(
+                            decoration: const InputDecoration(labelText: "Price"),
+                            keyboardType: TextInputType.number,
+                            validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                            onChanged: (value) => ticket.price = double.tryParse(value) ?? 0,
+                          ),
+
+                          TextFormField(
+                            decoration: const InputDecoration(labelText: "Quantity"),
+                            keyboardType: TextInputType.number,
+                            validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                            onChanged: (value) => ticket.quantity = int.tryParse(value) ?? 0,
+                          ),
+
+                          if(index > 0)
+                            TextButton.icon(
+                              onPressed: () => _removeTicketType(index), 
+                              icon: const Icon(Icons.remove_circle, color: Colors.red), 
+                              label: const Text("Remove")
+                              ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: _addTicketType,
+                  icon: const Icon(Icons.add),
+                  label: const Text("Add another ticket type"),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("Cancel"),
+                  ),
+
+                  ElevatedButton(
+                    onPressed: _saveEvent,
+                    child: const Text("Save Event"),
+                  )
+                ],
               )
             ],
           ),

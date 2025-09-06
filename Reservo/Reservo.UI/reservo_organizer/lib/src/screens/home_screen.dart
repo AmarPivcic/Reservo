@@ -293,7 +293,7 @@ class _EventCard extends StatelessWidget{
 
     final name = event.name ;
     final venue = event.venueName;
-    final city = event.cityName;
+    final city = event.cityName ?? "";
     final startDate = event.startDate;
     final dateText = DateFormat('dd.MM.yyyy').format(startDate);
     Uint8List? imageBytes;

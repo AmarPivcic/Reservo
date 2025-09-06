@@ -1,14 +1,18 @@
 import 'dart:async';
-
+import 'dart:convert';
 import 'package:reservo_organizer/src/models/event/event.dart';
+import 'package:reservo_organizer/src/models/event/event_insert_update.dart';
 import 'package:reservo_organizer/src/models/search_result.dart';
 import 'package:reservo_organizer/src/providers/base_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:reservo_organizer/src/utilities/custom_exception.dart';
 
 class EventProvider extends BaseProvider<Event, Event>
 {
   List<Event> events = [];
   bool isLoading = false;
   int countOfEvents = 0;
+
 
   EventProvider() : super('Event');
 
@@ -59,6 +63,41 @@ class EventProvider extends BaseProvider<Event, Event>
       countOfEvents = 0;
       isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<Event> insertEvent(EventInsertUpdate eventData) async {
+    return insertResponse<Event, EventInsertUpdate>(
+      eventData,
+      toJson: (d) => d.toJson(),
+      fromJson: (json) => Event.fromJson(json),
+      customEndpoint: 'Insert'
+    );
+  }
+
+  Future<void> activateEvent(int eventId) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('${BaseProvider.baseUrl}/Event/$eventId/Activate'),
+        headers: await createHeaders(),
+      );
+      // ignore: avoid_print
+      print(response.statusCode);
+      // ignore: avoid_print
+      print(response.body);
+      if(response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final event = Event.fromJson(data);
+        notifyListeners();
+      }
+      else {
+        handleHttpError(response);
+        throw Exception('Activate failed');
+      }
+    } on CustomException {
+      rethrow;
+    } catch (e) { 
+      throw CustomException("Can't reach the server. Please check your connection.");
     }
   }
 
