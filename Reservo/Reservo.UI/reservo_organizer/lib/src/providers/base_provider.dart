@@ -82,7 +82,7 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
       rethrow;
     } catch (e) {
       throw CustomException(
-          "Can't reach the server. Please check your internet connection.");
+          "Can't reach the server. Please check your internet connection. $e");
     }
   }
 
@@ -126,7 +126,7 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
     rethrow;
   } catch (e) {
     throw CustomException(
-        "Can't reach the server. Please check your internet connection.");
+        "Can't reach the server. Please check your internet connection. $e");
   }
 }
 

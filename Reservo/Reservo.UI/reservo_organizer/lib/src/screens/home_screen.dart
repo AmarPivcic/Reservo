@@ -1,12 +1,10 @@
 import 'dart:convert';
-import 'dart:ui';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:reservo_organizer/src/models/event/event.dart';
 import 'package:reservo_organizer/src/providers/event_provider.dart';
+import 'package:reservo_organizer/src/screens/event_details_screen.dart';
 import 'package:reservo_organizer/src/screens/master_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:reservo_organizer/src/screens/new_event_screen.dart';
@@ -309,7 +307,12 @@ class _EventCard extends StatelessWidget{
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          //TODO: Navigate to event edit screen
+          Navigator.push(
+            context, 
+            MaterialPageRoute(
+              builder: (_) => EventDetailsScreen(eventData: event)
+            )
+          );
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,

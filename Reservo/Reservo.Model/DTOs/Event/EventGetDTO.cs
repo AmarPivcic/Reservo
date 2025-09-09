@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Reservo.Model.DTOs.TicketType;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,5 +23,6 @@ namespace Reservo.Model.DTOs.Event
         public int OrganizerId { get; set; }
         public string OrganizerName { get; set; }
         public string CityName { get; set; }
+        public List<TicketTypeGetDTO> TicketTypes { get; set; } = new();
     }
 }

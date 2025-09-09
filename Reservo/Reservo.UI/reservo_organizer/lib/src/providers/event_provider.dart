@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:reservo_organizer/src/models/event/event.dart';
 import 'package:reservo_organizer/src/models/event/event_insert_update.dart';
 import 'package:reservo_organizer/src/models/search_result.dart';
@@ -75,24 +76,76 @@ class EventProvider extends BaseProvider<Event, Event>
     );
   }
 
-  Future<void> activateEvent(int eventId) async {
+  Future<Event> activateEvent(int eventId) async {
     try {
       final response = await http.patch(
         Uri.parse('${BaseProvider.baseUrl}/Event/$eventId/Activate'),
         headers: await createHeaders(),
       );
-      // ignore: avoid_print
-      print(response.statusCode);
-      // ignore: avoid_print
-      print(response.body);
+
       if(response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final event = Event.fromJson(data);
-        notifyListeners();
+        return event;
       }
       else {
         handleHttpError(response);
         throw Exception('Activate failed');
+      }
+    } on CustomException {
+      rethrow;
+    } catch (e) { 
+      throw CustomException("Can't reach the server. Please check your connection.");
+    }
+  }
+
+  Future<Event> setEventDraft(int eventId) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('${BaseProvider.baseUrl}/Event/$eventId/Draft'),
+        headers: await createHeaders(),
+      );
+
+      debugPrint("Draft response: ${response.body}");
+
+      if(response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return Event.fromJson(data);
+      }
+      else {
+        handleHttpError(response);
+        throw Exception("Failed to set event to draft");
+      }
+    } on CustomException {
+      rethrow;
+    } catch (e) { 
+      throw CustomException("Can't reach the server. Please check your connection.");
+    }
+  }
+
+  Future<Event> setEventActive(int eventId) async {
+    return await activateEvent(eventId);
+  }
+
+  Future<Event> updateEvent(int eventId, EventInsertUpdate dto) async {
+    try {
+      final response = await http.put(
+        Uri.parse('${BaseProvider.baseUrl}/Event/$eventId/Update'),
+        headers: await createHeaders(),
+        body: jsonEncode(dto.toJson())
+      );
+debugPrint("Sending JSON: ${jsonEncode(dto.toJson())}");
+debugPrint("Response code: ${response.statusCode}");
+debugPrint("Response body: ${response.body}");
+      if(response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final updated = Event.fromJson(data);
+        notifyListeners();
+        return updated;
+      }
+      else {
+        handleHttpError(response);
+        throw Exception("Failed to update event");
       }
     } on CustomException {
       rethrow;

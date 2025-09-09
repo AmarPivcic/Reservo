@@ -1,8 +1,7 @@
-import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reservo_organizer/src/models/event/event_insert_update.dart';
-import 'package:reservo_organizer/src/models/ticket_type/ticket_type.dart';
 import 'package:reservo_organizer/src/models/ticket_type/ticket_type_insert.dart';
 import 'package:reservo_organizer/src/providers/category_provider.dart';
 import 'package:reservo_organizer/src/providers/city_provider.dart';
@@ -23,17 +22,16 @@ class _NewEventScreenState extends State<NewEventScreen>{
 
   final _formKey = GlobalKey<FormState>();
 
-  String? _eventName;
+  late String _eventName;
   String? _eventDescription;
   int? _categoryId;
-  int? _venueId;
-  String? _eventImage; 
+  int? _venueId; 
   DateTime? _eventStartDate;
   DateTime? _eventEndDate;
   String? _image;
   int? _cityId;
 
-  List<TicketType> _ticketTypes = [];
+  List<TicketTypeInsert> _ticketTypes = [];
 
 @override
 void initState() {
@@ -48,13 +46,12 @@ void initState() {
 
 void _addTicketType() {
   setState(() {
-    _ticketTypes.add(TicketType(
-      0, 
+    _ticketTypes.add(TicketTypeInsert( 
       "",
       null,
       0,
       0,
-      ));
+    ));
   });
 }
 
@@ -62,7 +59,7 @@ void _removeTicketType(int index) {
     setState(() {
       _ticketTypes.removeAt(index);
     });
-  }
+}
 
 Future<void> _fetchVenuesForCity(int cityId) async {
   final vp = context.read<VenueProvider>();
@@ -76,22 +73,16 @@ void _saveEvent() async {
 
   final ep = context.read<EventProvider>();
 
-
   final eventData = EventInsertUpdate(
-    name: _eventName!,
+    name: _eventName,
     description: _eventDescription,
     startDate: _eventStartDate!,
     endDate: _eventEndDate!,
     categoryId: _categoryId!,
     venueId: _venueId!,
     image: _image,
-    ticketTypes: _ticketTypes.map((t) => TicketTypeInsert(
-      t.name,
-      t.description,
-      t.price,
-      t.quantity,
-    )).toList(),
-    );
+    ticketTypes: _ticketTypes,
+  );
 
   final newEvent = await ep.insertEvent(eventData);
     
@@ -212,7 +203,7 @@ Future<void> _pickStartDate() async {
                 validator: (v) => v == null ? "Required" : null,
               ),
 
-              DropdownButtonFormField(
+              DropdownButtonFormField<int>(
                 decoration: const InputDecoration(labelText: "City"),
                 value: _cityId,
                 items: cityProvider.cities
@@ -248,7 +239,7 @@ Future<void> _pickStartDate() async {
                 title: Text(
                   _eventStartDate == null
                       ? "Select event start date and time"
-                      : "Start: $_eventStartDate",
+                      : DateFormat('dd.MM.yyyy HH:mm').format(_eventStartDate!),
                 ),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: _pickStartDate,
@@ -258,10 +249,10 @@ Future<void> _pickStartDate() async {
                 title: Text(
                   _eventEndDate == null
                         ? "Select event end date and time"
-                        : "Start: $_eventEndDate"
+                        : DateFormat('dd.MM.yyyy HH:mm').format(_eventEndDate!)
                 ),
                 trailing: const Icon(Icons.calendar_today),
-                onTap: _pickEndDate,
+                onTap: _eventStartDate == null ? null : _pickEndDate,
                 enabled: _eventStartDate != null,
               ),
 

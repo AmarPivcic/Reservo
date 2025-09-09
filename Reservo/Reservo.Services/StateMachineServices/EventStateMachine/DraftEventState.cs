@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Reservo.Model.DTOs.Event;
 using Reservo.Model.Entities;
 using Reservo.Model.Utilities;
@@ -34,6 +35,44 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
             {
                 throw new UserException("Event not found!");
             }
+        }
+
+        public override async Task<EventGetDTO> Update(int id, EventUpdateDTO request)
+        {
+            var entity = _context.Events
+                .Include(e => e.TicketTypes)
+                .Include(e => e.Category)
+                .Include(e => e.Venue)
+                .Include(e => e.User)
+                .FirstOrDefault(e => e.Id == id);
+
+            if (entity == null)
+                throw new UserException("Event not found!");
+
+            _mapper.Map(request, entity);
+
+            entity.TicketTypes.Clear();
+            foreach (var ticketTypeDto in request.TicketTypes)
+            {
+                var ticketType = _mapper.Map<TicketType>(ticketTypeDto);
+                ticketType.Event = entity;
+
+                System.Diagnostics.Debug.WriteLine($"TicketType: {ticketTypeDto.Name}, {ticketTypeDto.Description}, {ticketTypeDto.Price}, {ticketTypeDto.Quantity}");
+
+                entity.TicketTypes.Add(ticketType);
+            }
+
+
+            await _context.SaveChangesAsync();
+
+            var updatedEntity = _context.Events
+                .Include(e => e.TicketTypes)
+                .Include(e => e.Category)
+                .Include(e => e.Venue)
+                .Include(e => e.User)
+                .FirstOrDefault(e => e.Id == id);
+
+            return _mapper.Map<EventGetDTO>(entity);
         }
     }
 }

@@ -29,7 +29,8 @@ namespace Reservo.Services.Mapping
             CreateMap<EventInsertDTO, Event>()
                 .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.Image != null ? Convert.FromBase64String(src.Image) : null));
             CreateMap<EventUpdateDTO, Event>()
-                .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.Image != null ? Convert.FromBase64String(src.Image) : null));
+                .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.Image != null ? Convert.FromBase64String(src.Image) : null))
+                .ForMember(dest => dest.TicketTypes, opt => opt.Ignore());
         }
     }
 }

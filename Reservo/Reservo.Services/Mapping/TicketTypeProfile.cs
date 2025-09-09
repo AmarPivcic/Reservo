@@ -13,7 +13,11 @@ namespace Reservo.Services.Mapping
     {
         public TicketTypeProfile()
         {
+            CreateMap<TicketType, TicketTypeInsertDTO>();
+            CreateMap<TicketType, TicketTypeGetDTO>();
+
             CreateMap<TicketTypeInsertDTO, TicketType>();
+            CreateMap<TicketTypeGetDTO, TicketType>();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Reservo.Model.DTOs.Event;
 using Reservo.Model.Entities;
@@ -39,6 +40,38 @@ namespace Reservo.Services.Services
                 var state = _baseEventState.CreateState(entity.State);
 
                 return await state.Activate(entity.Id);
+            }
+            else
+            {
+                throw new UserException($"Entity ({id}) doesn't exists!");
+            }
+        }
+
+        public override async Task<EventGetDTO> Update(int id, EventUpdateDTO request)
+        {
+            var entity = await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
+
+            if (entity != null)
+            {
+                var state = _baseEventState.CreateState(entity.State);
+
+                return await state.Update(entity.Id, request);
+            }
+            else
+            {
+                throw new UserException($"Entity ({id}) doesn't exists!");
+            }
+        }
+
+        public async Task<EventGetDTO> Draft(int id)
+        {
+            var entity = await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
+
+            if (entity != null)
+            {
+                var state = _baseEventState.CreateState(entity.State);
+
+                return await state.Draft(id);
             }
             else
             {
