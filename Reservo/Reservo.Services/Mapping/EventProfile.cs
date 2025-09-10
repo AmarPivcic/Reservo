@@ -19,7 +19,9 @@ namespace Reservo.Services.Mapping
                 .ForMember(dest => dest.VenueName, opt => opt.MapFrom(src => src.Venue.Name))
                 .ForMember(dest => dest.OrganizerName, opt => opt.MapFrom(src => src.User.Name))
                 .ForMember(dest => dest.Image, opt => opt.MapFrom(src => Convert.ToBase64String(src.Image) ?? Convert.ToBase64String(src.Category.Image)))
-                .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.Venue.City.Name));
+                .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.Venue.City.Name))
+                .ForMember(dest => dest.CityId, opt => opt.MapFrom(src => src.Venue.City.Id));
+                
             CreateMap<Event, EventUpdateDTO>()
                 .ForMember(dest => dest.Image, opt => opt.MapFrom(src => Convert.ToBase64String(src.Image) ?? Convert.ToBase64String(src.Category.Image)));
             CreateMap<Event, EventInsertDTO>()

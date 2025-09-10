@@ -8,6 +8,7 @@ import 'package:reservo_organizer/src/providers/city_provider.dart';
 import 'package:reservo_organizer/src/providers/event_provider.dart';
 import 'package:reservo_organizer/src/providers/venue_provider.dart';
 import 'package:reservo_organizer/src/screens/event_details_screen.dart';
+import 'package:reservo_organizer/src/screens/event_edit_screen.dart';
 import 'package:reservo_organizer/src/screens/master_screen.dart';
 
 
@@ -30,6 +31,10 @@ class _NewEventScreenState extends State<NewEventScreen>{
   DateTime? _eventEndDate;
   String? _image;
   int? _cityId;
+  String? _categoryName;
+  String? _cityName;
+  String? _venueName;
+
 
   List<TicketTypeInsert> _ticketTypes = [];
 
@@ -42,6 +47,12 @@ void initState() {
     final cip = context.read<CityProvider>();
     cip.getCities();
   });
+  _ticketTypes.add(TicketTypeInsert( 
+      "",
+      null,
+      0,
+      0,
+    ));
 }
 
 void _addTicketType() {
@@ -85,7 +96,10 @@ void _saveEvent() async {
   );
 
   final newEvent = await ep.insertEvent(eventData);
-    
+  newEvent.categoryName = _categoryName;
+  newEvent.cityName = _cityName;
+  newEvent.venueName = _venueName;
+
   Navigator.push(
     context, 
     MaterialPageRoute(
@@ -199,7 +213,11 @@ Future<void> _pickStartDate() async {
                         value: c.id,
                         child: Text(c.name)
                        )).toList(),
-                onChanged: (val) => setState(() => _categoryId = val),
+                onChanged: (val) => setState(() {
+                  _categoryId = val;
+                  _categoryName = categoryProvider.categories.firstWhere((c) =>
+                   c.id == val).name;
+                  }),
                 validator: (v) => v == null ? "Required" : null,
               ),
 
@@ -214,7 +232,11 @@ Future<void> _pickStartDate() async {
                 onChanged: (val) async {
                   setState(() {
                     _cityId = val;
+                    _cityName = cityProvider.cities
+                        .firstWhere((c) => c.id == val)
+                        .name;
                     _venueId = null;
+                    _venueName = null;
                   });
                   await _fetchVenuesForCity(val!);
                 },
@@ -231,7 +253,12 @@ Future<void> _pickStartDate() async {
                         )).toList(),
                 onChanged: _cityId == null
                     ? null
-                    : (val) => setState(() => _venueId = val),
+                    : (val) => setState(() {
+                        _venueId = val;
+                        _venueName = venueProvider.venues
+                            .firstWhere((v) => v.id == val)
+                            .name;
+                      }),
                 validator: (v) => v == null ? "Required" : null,
               ),
 
@@ -261,47 +288,50 @@ Future<void> _pickStartDate() async {
               Text("Ticket Types", style: Theme.of(context).textTheme.headline6,),
 
               Column(
-                children: _ticketTypes.asMap().entries.map((e) {
-                  int index = e.key;
-                  var ticket = e.value;
-
+                children: _ticketTypes.map((ticket) {
+                  final index = _ticketTypes.indexOf(ticket);
                   return Card(
+                    key: ValueKey(ticket), // <-- important
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Column(
                         children: [
                           TextFormField(
+                            key: ValueKey("name_${ticket.hashCode}"),
+                            initialValue: ticket.name,
                             decoration: const InputDecoration(labelText: "Ticket Name"),
                             validator: (v) => v == null || v.isEmpty ? "Required" : null,
                             onChanged: (value) => ticket.name = value,
                           ),
-
                           TextFormField(
+                            key: ValueKey("desc_${ticket.hashCode}"),
+                            initialValue: ticket.description,
                             decoration: const InputDecoration(labelText: "Description (optional)"),
                             onChanged: (value) => ticket.description = value,
                           ),
-
                           TextFormField(
+                            key: ValueKey("price_${ticket.hashCode}"),
+                            initialValue: ticket.price.toString(),
                             decoration: const InputDecoration(labelText: "Price"),
                             keyboardType: TextInputType.number,
                             validator: (v) => v == null || v.isEmpty ? "Required" : null,
                             onChanged: (value) => ticket.price = double.tryParse(value) ?? 0,
                           ),
-
                           TextFormField(
+                            key: ValueKey("qty_${ticket.hashCode}"),
+                            initialValue: ticket.quantity.toString(),
                             decoration: const InputDecoration(labelText: "Quantity"),
                             keyboardType: TextInputType.number,
                             validator: (v) => v == null || v.isEmpty ? "Required" : null,
                             onChanged: (value) => ticket.quantity = int.tryParse(value) ?? 0,
                           ),
-
                           if(index > 0)
                             TextButton.icon(
                               onPressed: () => _removeTicketType(index), 
                               icon: const Icon(Icons.remove_circle, color: Colors.red), 
                               label: const Text("Remove")
-                              ),
+                            ),
                         ],
                       ),
                     ),

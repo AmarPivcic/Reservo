@@ -16,6 +16,7 @@ class Event {
   String? venueName;
   int venueId;
   String? cityName;
+  int cityId;
   String? image;
   List<TicketType> ticketTypes;
 
@@ -28,6 +29,7 @@ class Event {
     required this.state,
     required this.categoryId,
     required this.venueId,
+    required this.cityId,
     this.categoryName,
     this.venueName,
     this.cityName,

@@ -26,14 +26,6 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
 
             entity.State = "draft";
 
-            foreach (var ticketTypeDto in request.TicketTypes)
-            {
-                var ticketType = _mapper.Map<TicketType>(ticketTypeDto);
-                ticketType.Event = entity;
-
-                entity.TicketTypes.Add(ticketType);
-            }
-
             set.Add(entity);
 
             await _context.SaveChangesAsync();

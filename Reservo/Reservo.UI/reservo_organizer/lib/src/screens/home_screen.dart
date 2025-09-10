@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:reservo_organizer/src/models/event/event.dart';
 import 'package:reservo_organizer/src/providers/event_provider.dart';
-import 'package:reservo_organizer/src/screens/event_details_screen.dart';
+import 'package:reservo_organizer/src/screens/event_edit_screen.dart';
 import 'package:reservo_organizer/src/screens/master_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:reservo_organizer/src/screens/new_event_screen.dart';
@@ -306,13 +307,18 @@ class _EventCard extends StatelessWidget{
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          final result = await Navigator.push( 
             context, 
             MaterialPageRoute(
-              builder: (_) => EventDetailsScreen(eventData: event)
+              builder: (_) => EventEditScreen(eventData: event, previousState: event.state,)
             )
           );
+
+          if(result == true){
+            await context.read<EventProvider>().getEvents();
+            
+          }
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,

@@ -27,6 +27,24 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
             return _mapper.Map<EventGetDTO>(entity);
         }
 
+        public async override Task<EventGetDTO> Activate(int id)
+        {
+            var entity = _context.Events.FirstOrDefault(e => e.Id == id);
+
+            if (entity != null)
+            {
+                entity.State = "active";
+
+                await _context.SaveChangesAsync();
+
+                return _mapper.Map<EventGetDTO>(entity);
+            }
+            else
+            {
+                throw new UserException("Event not found!");
+            }
+        }
+
         public override async Task<EventGetDTO> Draft(int id)
         {
             var entity = _context.Events.FirstOrDefault(e => e.Id == id);

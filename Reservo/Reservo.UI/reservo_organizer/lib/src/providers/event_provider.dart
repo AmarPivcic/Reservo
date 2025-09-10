@@ -106,8 +106,6 @@ class EventProvider extends BaseProvider<Event, Event>
         headers: await createHeaders(),
       );
 
-      debugPrint("Draft response: ${response.body}");
-
       if(response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return Event.fromJson(data);
@@ -134,9 +132,7 @@ class EventProvider extends BaseProvider<Event, Event>
         headers: await createHeaders(),
         body: jsonEncode(dto.toJson())
       );
-debugPrint("Sending JSON: ${jsonEncode(dto.toJson())}");
-debugPrint("Response code: ${response.statusCode}");
-debugPrint("Response body: ${response.body}");
+
       if(response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final updated = Event.fromJson(data);

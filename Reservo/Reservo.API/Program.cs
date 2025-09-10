@@ -23,6 +23,8 @@ builder.Services.AddTransient<IEventService, EventService>();
 builder.Services.AddTransient<ICityService, CityService>();
 builder.Services.AddTransient<IVenueService, VenueService>();
 builder.Services.AddTransient<ICategoryService, CategoryService>();
+builder.Services.AddTransient<ITicketTypeService, TicketTypeService>();
+
 
 builder.Services.AddTransient<BaseEventState>();
 builder.Services.AddTransient<InitialEventState>();
