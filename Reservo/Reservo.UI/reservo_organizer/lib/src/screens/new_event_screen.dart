@@ -8,7 +8,6 @@ import 'package:reservo_organizer/src/providers/city_provider.dart';
 import 'package:reservo_organizer/src/providers/event_provider.dart';
 import 'package:reservo_organizer/src/providers/venue_provider.dart';
 import 'package:reservo_organizer/src/screens/event_details_screen.dart';
-import 'package:reservo_organizer/src/screens/event_edit_screen.dart';
 import 'package:reservo_organizer/src/screens/master_screen.dart';
 
 
@@ -82,6 +81,20 @@ void _saveEvent() async {
 
   _formKey.currentState!.save();
 
+  if (_eventStartDate == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Please select a start date")),
+    );
+    return;
+  }
+
+  if (_eventEndDate == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Please select an end date")),
+    );
+    return;
+  }
+
   final ep = context.read<EventProvider>();
 
   final eventData = EventInsertUpdate(
@@ -99,6 +112,7 @@ void _saveEvent() async {
   newEvent.categoryName = _categoryName;
   newEvent.cityName = _cityName;
   newEvent.venueName = _venueName;
+  newEvent.cityId = _cityId!;
 
   Navigator.push(
     context, 
@@ -184,189 +198,194 @@ Future<void> _pickStartDate() async {
 
 
     return MasterScreen(
-      showBackButton: true,
+      showBackButton: false,
       child:  SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Event Info", style: Theme.of(context).textTheme.headline6),
-              TextFormField(
-                decoration: const InputDecoration(labelText: "Event Name"),
-                validator: (v) =>
-                      v == null || v.isEmpty ? "Required" : null,
-                    onSaved: (v) => _eventName = v!,
-              ),
-
-              TextFormField(
-                decoration: const InputDecoration(labelText: "Description"),
-                onSaved: (v) => _eventDescription = v!
-              ),
-
-              DropdownButtonFormField(
-                decoration: const InputDecoration(labelText: "Category"),
-                value: _categoryId,
-                items: categoryProvider.categories
-                       .map((c) => DropdownMenuItem<int>(
-                        value: c.id,
-                        child: Text(c.name)
-                       )).toList(),
-                onChanged: (val) => setState(() {
-                  _categoryId = val;
-                  _categoryName = categoryProvider.categories.firstWhere((c) =>
-                   c.id == val).name;
-                  }),
-                validator: (v) => v == null ? "Required" : null,
-              ),
-
-              DropdownButtonFormField<int>(
-                decoration: const InputDecoration(labelText: "City"),
-                value: _cityId,
-                items: cityProvider.cities
-                       .map((c) => DropdownMenuItem<int>(
-                        value: c.id,
-                        child: Text(c.name)
-                       )).toList(),
-                onChanged: (val) async {
-                  setState(() {
-                    _cityId = val;
-                    _cityName = cityProvider.cities
-                        .firstWhere((c) => c.id == val)
-                        .name;
-                    _venueId = null;
-                    _venueName = null;
-                  });
-                  await _fetchVenuesForCity(val!);
-                },
-                validator: (v) => v == null ? "Required" : null
-              ),
-
-              DropdownButtonFormField<int>(
-                decoration: const InputDecoration(labelText: "Venue"),
-                value: _venueId,
-                items: venueProvider.venues
-                        .map((v) => DropdownMenuItem<int>(
-                         value: v.id,
-                         child: Text(v.name),
-                        )).toList(),
-                onChanged: _cityId == null
-                    ? null
-                    : (val) => setState(() {
-                        _venueId = val;
-                        _venueName = venueProvider.venues
-                            .firstWhere((v) => v.id == val)
-                            .name;
-                      }),
-                validator: (v) => v == null ? "Required" : null,
-              ),
-
-              ListTile(
-                title: Text(
-                  _eventStartDate == null
-                      ? "Select event start date and time"
-                      : DateFormat('dd.MM.yyyy HH:mm').format(_eventStartDate!),
-                ),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: _pickStartDate,
-              ),
-
-              ListTile(
-                title: Text(
-                  _eventEndDate == null
-                        ? "Select event end date and time"
-                        : DateFormat('dd.MM.yyyy HH:mm').format(_eventEndDate!)
-                ),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: _eventStartDate == null ? null : _pickEndDate,
-                enabled: _eventStartDate != null,
-              ),
-
-              const SizedBox(height: 20),
-
-              Text("Ticket Types", style: Theme.of(context).textTheme.headline6,),
-
-              Column(
-                children: _ticketTypes.map((ticket) {
-                  final index = _ticketTypes.indexOf(ticket);
-                  return Card(
-                    key: ValueKey(ticket), // <-- important
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        children: [
-                          TextFormField(
-                            key: ValueKey("name_${ticket.hashCode}"),
-                            initialValue: ticket.name,
-                            decoration: const InputDecoration(labelText: "Ticket Name"),
-                            validator: (v) => v == null || v.isEmpty ? "Required" : null,
-                            onChanged: (value) => ticket.name = value,
-                          ),
-                          TextFormField(
-                            key: ValueKey("desc_${ticket.hashCode}"),
-                            initialValue: ticket.description,
-                            decoration: const InputDecoration(labelText: "Description (optional)"),
-                            onChanged: (value) => ticket.description = value,
-                          ),
-                          TextFormField(
-                            key: ValueKey("price_${ticket.hashCode}"),
-                            initialValue: ticket.price.toString(),
-                            decoration: const InputDecoration(labelText: "Price"),
-                            keyboardType: TextInputType.number,
-                            validator: (v) => v == null || v.isEmpty ? "Required" : null,
-                            onChanged: (value) => ticket.price = double.tryParse(value) ?? 0,
-                          ),
-                          TextFormField(
-                            key: ValueKey("qty_${ticket.hashCode}"),
-                            initialValue: ticket.quantity.toString(),
-                            decoration: const InputDecoration(labelText: "Quantity"),
-                            keyboardType: TextInputType.number,
-                            validator: (v) => v == null || v.isEmpty ? "Required" : null,
-                            onChanged: (value) => ticket.quantity = int.tryParse(value) ?? 0,
-                          ),
-                          if(index > 0)
-                            TextButton.icon(
-                              onPressed: () => _removeTicketType(index), 
-                              icon: const Icon(Icons.remove_circle, color: Colors.red), 
-                              label: const Text("Remove")
-                            ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: _addTicketType,
-                  icon: const Icon(Icons.add),
-                  label: const Text("Add another ticket type"),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("Cancel"),
+                  Text("Event Info", style: Theme.of(context).textTheme.headline6),
+                  TextFormField(
+                    decoration: const InputDecoration(labelText: "Event Name"),
+                    validator: (v) =>
+                          v == null || v.isEmpty ? "Required" : null,
+                        onSaved: (v) => _eventName = v!,
                   ),
 
-                  ElevatedButton(
-                    onPressed: _saveEvent,
-                    child: const Text("Save Event"),
+                  TextFormField(
+                    decoration: const InputDecoration(labelText: "Description"),
+                    onSaved: (v) => _eventDescription = v!
+                  ),
+
+                  DropdownButtonFormField(
+                    decoration: const InputDecoration(labelText: "Category"),
+                    value: _categoryId,
+                    items: categoryProvider.categories
+                          .map((c) => DropdownMenuItem<int>(
+                            value: c.id,
+                            child: Text(c.name)
+                          )).toList(),
+                    onChanged: (val) => setState(() {
+                      _categoryId = val;
+                      _categoryName = categoryProvider.categories.firstWhere((c) =>
+                      c.id == val).name;
+                      }),
+                    validator: (v) => v == null ? "Required" : null,
+                  ),
+
+                  DropdownButtonFormField<int>(
+                    decoration: const InputDecoration(labelText: "City"),
+                    value: _cityId,
+                    items: cityProvider.cities
+                          .map((c) => DropdownMenuItem<int>(
+                            value: c.id,
+                            child: Text(c.name)
+                          )).toList(),
+                    onChanged: (val) async {
+                      setState(() {
+                        _cityId = val;
+                        _cityName = cityProvider.cities
+                            .firstWhere((c) => c.id == val)
+                            .name;
+                        _venueId = null;
+                        _venueName = null;
+                      });
+                      await _fetchVenuesForCity(val!);
+                    },
+                    validator: (v) => v == null ? "Required" : null
+                  ),
+
+                  DropdownButtonFormField<int>(
+                    decoration: const InputDecoration(labelText: "Venue"),
+                    value:  venueProvider.venues.any((v) => v.id == _venueId) ? _venueId : null,
+                    items: venueProvider.venues
+                            .map((v) => DropdownMenuItem<int>(
+                            value: v.id,
+                            child: Text(v.name),
+                            )).toList(),
+                    onChanged: _cityId == null
+                        ? null
+                        : (val) => setState(() {
+                            _venueId = val;
+                            _venueName = venueProvider.venues
+                                .firstWhere((v) => v.id == val)
+                                .name;
+                          }),
+                    validator: (v) => v == null ? "Required" : null,
+                  ),
+
+                  ListTile(
+                    title: Text(
+                      _eventStartDate == null
+                          ? "Select event start date and time"
+                          : DateFormat('dd.MM.yyyy HH:mm').format(_eventStartDate!),
+                    ),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: _pickStartDate,
+                  ),
+
+                  ListTile(
+                    title: Text(
+                      _eventEndDate == null
+                            ? "Select event end date and time"
+                            : DateFormat('dd.MM.yyyy HH:mm').format(_eventEndDate!)
+                    ),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: _eventStartDate == null ? null : _pickEndDate,
+                    enabled: _eventStartDate != null,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Text("Ticket Types", style: Theme.of(context).textTheme.headline6,),
+
+                  Column(
+                    children: _ticketTypes.map((ticket) {
+                      final index = _ticketTypes.indexOf(ticket);
+                      return Card(
+                        key: ValueKey(ticket), // <-- important
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                key: ValueKey("name_${ticket.hashCode}"),
+                                initialValue: ticket.name,
+                                decoration: const InputDecoration(labelText: "Ticket Name"),
+                                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                                onChanged: (value) => ticket.name = value,
+                              ),
+                              TextFormField(
+                                key: ValueKey("desc_${ticket.hashCode}"),
+                                initialValue: ticket.description,
+                                decoration: const InputDecoration(labelText: "Description (optional)"),
+                                onChanged: (value) => ticket.description = value,
+                              ),
+                              TextFormField(
+                                key: ValueKey("price_${ticket.hashCode}"),
+                                initialValue: ticket.price.toString(),
+                                decoration: const InputDecoration(labelText: "Price"),
+                                keyboardType: TextInputType.number,
+                                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                                onChanged: (value) => ticket.price = double.tryParse(value) ?? 0,
+                              ),
+                              TextFormField(
+                                key: ValueKey("qty_${ticket.hashCode}"),
+                                initialValue: ticket.quantity.toString(),
+                                decoration: const InputDecoration(labelText: "Quantity"),
+                                keyboardType: TextInputType.number,
+                                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                                onChanged: (value) => ticket.quantity = int.tryParse(value) ?? 0,
+                              ),
+                              if(index > 0)
+                                TextButton.icon(
+                                  onPressed: () => _removeTicketType(index), 
+                                  icon: const Icon(Icons.remove_circle, color: Colors.red), 
+                                  label: const Text("Remove")
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: _addTicketType,
+                      icon: const Icon(Icons.add),
+                      label: const Text("Add another ticket type"),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Cancel"),
+                      ),
+
+                      ElevatedButton(
+                        onPressed: _saveEvent,
+                        child: const Text("Save Event"),
+                      )
+                    ],
                   )
                 ],
-              )
-            ],
+              ),
+            ),
           ),
-        ),
+        )
       ),
      );
   }

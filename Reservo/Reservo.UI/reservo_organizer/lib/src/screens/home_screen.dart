@@ -9,6 +9,7 @@ import 'package:reservo_organizer/src/screens/event_edit_screen.dart';
 import 'package:reservo_organizer/src/screens/master_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:reservo_organizer/src/screens/new_event_screen.dart';
+import 'package:reservo_organizer/src/screens/previous_events_screen.dart';
 
 class HomeScreen extends StatefulWidget {
 const HomeScreen({super.key});
@@ -80,6 +81,28 @@ void _clearFilters() {
   Widget build(BuildContext context) {
     return MasterScreen(
       showBackButton: false,
+      actions: [
+        TextButton.icon(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+            );
+          },
+          icon: const Icon(Icons.event, color: Colors.white),
+          label: const Text("Events", style: TextStyle(color: Colors.white)),
+        ),
+        TextButton.icon(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context, 
+              MaterialPageRoute(builder: (context) => const PreviousEventsScreen()),
+            );
+          },
+          icon: const Icon(Icons.history, color: Colors.white),
+          label: const Text("Previous Events", style: TextStyle(color: Colors.white)),
+        ),
+      ],
       child: Consumer<EventProvider>(
         builder: (context, ep, _) {
           return LayoutBuilder(
@@ -317,7 +340,6 @@ class _EventCard extends StatelessWidget{
 
           if(result == true){
             await context.read<EventProvider>().getEvents();
-            
           }
         },
         child: Column(

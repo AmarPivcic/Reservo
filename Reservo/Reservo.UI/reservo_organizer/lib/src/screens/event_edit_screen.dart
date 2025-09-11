@@ -9,6 +9,7 @@ import 'package:reservo_organizer/src/providers/city_provider.dart';
 import 'package:reservo_organizer/src/providers/event_provider.dart';
 import 'package:reservo_organizer/src/providers/ticket_type_provider.dart';
 import 'package:reservo_organizer/src/providers/venue_provider.dart';
+import 'package:reservo_organizer/src/screens/home_screen.dart';
 import 'package:reservo_organizer/src/screens/master_screen.dart';
 import 'package:intl/intl.dart';
 
@@ -42,11 +43,15 @@ class _EventEditScreenState extends State<EventEditScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
     final cap = context.read<CategoryProvider>();
     cap.getCategories();
     final cip = context.read<CityProvider>();
     cip.getCities();
+
+    if (_cityId != null) {
+      await context.read<VenueProvider>().getVenuesByCity(_cityId!);
+    }
 
     _fetchTickets();
   });
@@ -202,7 +207,12 @@ Future<void> _activateEvent() async{
       builder: (_) => AlertDialog(
         title: const Text("Activated"),
         content: const Text("Event has been activated"),
-        actions: [TextButton(onPressed: () {Navigator.pop(context); Navigator.pop(context, true);}, child: const Text("OK"))],
+        actions: [TextButton(
+          onPressed: () {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const HomeScreen()), 
+              (route) => false);
+            }, child: const Text("OK"))],
       )
     );
   } catch (e) {
@@ -301,200 +311,205 @@ Future<void> _saveChanges() async {
     final venueProvider = context.watch<VenueProvider>();
 
     return MasterScreen(
-      showBackButton: true,
+      showBackButton: false,
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Edit event", style: Theme.of(context).textTheme.headlineMedium),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      OutlinedButton(
-                        onPressed: _isSaving ? null : _revertStateAndClose, 
-                        child: const Text("Cancel")
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: _isSaving ? null : _saveChanges, 
-                        child: const Text("Save")
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                      onPressed: widget.eventData.state == "active" || _isActivating ? null : _activateEvent,
-                      child: _isActivating ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text("Activate"),
-                      ),
+                      Text("Edit event", style: Theme.of(context).textTheme.headlineMedium),
+                      Row(
+                        children: [
+                          OutlinedButton(
+                            onPressed: _isSaving ? null : _revertStateAndClose, 
+                            child: const Text("Cancel")
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: _isSaving ? null : _saveChanges, 
+                            child: const Text("Save")
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                          onPressed: widget.eventData.state == "active" || _isActivating ? null : _activateEvent,
+                          child: _isActivating ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text("Activate"),
+                          ),
+                        ],
+                      )
                     ],
-                  )
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  if (_eventImage != null && _eventImage!.isNotEmpty)
+                    Container(
+                      height: 160,
+                    width: double.infinity,
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.grey[200]),
+                    child: const Center(child: Text("Image preview (not editable)")),
+                    )
+                  else
+                    Container(height: 160, width: double.infinity, color: Colors.grey[100], child: Center(child: Text("No image"))),
+
+                    const SizedBox(height: 12),
+
+                  TextFormField(
+                    initialValue: _eventName,
+                    decoration: const InputDecoration(labelText: "Event name"),
+                    validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                    onSaved: (v) => _eventName = v!.trim(),
+                  ),
+
+                  const SizedBox(height: 8),
+                    TextFormField(
+                    initialValue: _eventDescription,
+                    decoration: const InputDecoration(labelText: "Description"),
+                    onSaved: (v) => _eventDescription = v,
+                  ),
+
+                  const SizedBox(height: 8),
+                
+                  DropdownButtonFormField<int>(
+                    decoration: const InputDecoration(labelText: "Category"), 
+                    value:  categoryProvider.categories.any((c) => c.id == _categoryId) ? _categoryId : null,
+                    items: categoryProvider.categories
+                        .map((c) => DropdownMenuItem<int>(value: c.id, child: Text(c.name)))
+                        .toList(),
+                    onChanged: (val) => setState(() => _categoryId = val),
+                    validator: (v) => v == null ? "Required" : null,
+                  ),
+                  
+                  const SizedBox(height: 8),
+
+                  DropdownButtonFormField<int>(
+                    decoration: const InputDecoration(labelText: "City"),
+                    value: cityProvider.cities.any((c) => c.id == _cityId) ? _cityId : null,
+                    items: cityProvider.cities
+                          .map((c) => DropdownMenuItem<int>(
+                            value: c.id,
+                            child: Text(c.name)
+                          )).toList(),
+                    onChanged: (val) async {
+                      setState(() {
+                        _cityId = val;
+                        _venueId = null;
+                      });
+                      await venueProvider.getVenuesByCity(val!);
+                    },
+                    validator: (v) => v == null ? "Required" : null
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  DropdownButtonFormField<int>(
+                    decoration: const InputDecoration(labelText: "Venue"),
+                    value:  venueProvider.venues.any((v) => v.id == _venueId) ? _venueId : null,
+                    items: venueProvider.venues
+                            .map((v) => DropdownMenuItem<int>(
+                            value: v.id,
+                            child: Text(v.name),
+                            )).toList(),
+                    onChanged: _cityId == null
+                        ? null
+                        : (val) => setState(() => _venueId = val),
+                    validator: (v) => v == null ? "Required" : null,
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  ListTile(
+                    title: Text(_eventStartDate == null ? 'Select Start' : DateFormat('dd.MM.yyyy HH:mm').format(_eventStartDate!)),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: _pickStartDate,
+                  ),
+                  ListTile(
+                    title: Text(_eventEndDate == null ? 'Select End' : DateFormat('dd.MM.yyyy HH:mm').format(_eventEndDate!)),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: _eventStartDate == null ? null : _pickEndDate,
+                    enabled: _eventStartDate != null,
+                  ),
+                  
+                  const SizedBox(height: 20),
+
+                  Text("Ticket Types", style: Theme.of(context).textTheme.headlineSmall),
+                  
+                  const SizedBox(height: 8),        
+
+                  Column(
+                    children: _ticketTypes.asMap().entries.map((e) {
+                      int index = e.key;
+                      var ticket = e.value;
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                initialValue: ticket.name,
+                                decoration: const InputDecoration(labelText: "Ticket Name"),
+                                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                                onChanged: (value) => ticket.name = value,
+                              ),
+
+                              TextFormField(
+                                initialValue: ticket.description,
+                                decoration: const InputDecoration(labelText: "Description (optional)"),
+                                onChanged: (value) => ticket.description = value,
+                              ),
+
+                              TextFormField(
+                                initialValue: ticket.price.toString(),
+                                decoration: const InputDecoration(labelText: "Price"),
+                                keyboardType: TextInputType.number,
+                                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                                onChanged: (value) => ticket.price = double.tryParse(value) ?? 0,
+                              ),
+
+                              TextFormField(
+                                initialValue: ticket.quantity.toString(),
+                                decoration: const InputDecoration(labelText: "Quantity"),
+                                keyboardType: TextInputType.number,
+                                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                                onChanged: (value) => ticket.quantity = int.tryParse(value) ?? 0,
+                              ),
+
+                              if(index > 0)
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton.icon(
+                                    onPressed: () => _removeTicketType(index), 
+                                    icon: const Icon(Icons.remove_circle, color: Colors.red), 
+                                    label: const Text("Remove")
+                                  ),
+                                )
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: _addTicketType,
+                      icon: const Icon(Icons.add),
+                      label: const Text("Add another ticket type"),
+                    ),
+                  ),
                 ],
               ),
-
-              const SizedBox(height: 16),
-
-              if (_eventImage != null && _eventImage!.isNotEmpty)
-                Container(
-                  height: 160,
-                width: double.infinity,
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.grey[200]),
-                child: const Center(child: Text("Image preview (not editable)")),
-                )
-              else
-                Container(height: 160, width: double.infinity, color: Colors.grey[100], child: Center(child: Text("No image"))),
-
-                const SizedBox(height: 12),
-
-              TextFormField(
-                initialValue: _eventName,
-                decoration: const InputDecoration(labelText: "Event name"),
-                validator: (v) => v == null || v.isEmpty ? "Required" : null,
-                onSaved: (v) => _eventName = v!.trim(),
-              ),
-
-              const SizedBox(height: 8),
-                TextFormField(
-                initialValue: _eventDescription,
-                decoration: const InputDecoration(labelText: "Description"),
-                onSaved: (v) => _eventDescription = v,
-              ),
-
-              const SizedBox(height: 8),
-            
-              DropdownButtonFormField<int>(
-                decoration: const InputDecoration(labelText: "Category"), 
-                value:  categoryProvider.categories.any((c) => c.id == _categoryId) ? _categoryId : null,
-                items: categoryProvider.categories
-                    .map((c) => DropdownMenuItem<int>(value: c.id, child: Text(c.name)))
-                    .toList(),
-                onChanged: (val) => setState(() => _categoryId = val),
-                validator: (v) => v == null ? "Required" : null,
-              ),
-              
-              const SizedBox(height: 8),
-
-              DropdownButtonFormField<int>(
-                decoration: const InputDecoration(labelText: "City"),
-                value: cityProvider.cities.any((c) => c.id == _cityId) ? _cityId : null,
-                items: cityProvider.cities
-                       .map((c) => DropdownMenuItem<int>(
-                        value: c.id,
-                        child: Text(c.name)
-                       )).toList(),
-                onChanged: (val) async {
-                  setState(() {
-                    _cityId = val;
-                    _venueId = null;
-                  });
-                  await venueProvider.getVenuesByCity(val!);
-                },
-                validator: (v) => v == null ? "Required" : null
-              ),
-
-              const SizedBox(height: 8),
-
-              DropdownButtonFormField<int>(
-                decoration: const InputDecoration(labelText: "Venue"),
-                value:  venueProvider.venues.any((v) => v.id == _venueId) ? _venueId : null,
-                items: venueProvider.venues
-                        .map((v) => DropdownMenuItem<int>(
-                         value: v.id,
-                         child: Text(v.name),
-                        )).toList(),
-                onChanged: _cityId == null
-                    ? null
-                    : (val) => setState(() => _venueId = val),
-                validator: (v) => v == null ? "Required" : null,
-              ),
-
-              const SizedBox(height: 12),
-
-              ListTile(
-                title: Text(_eventStartDate == null ? 'Select Start' : DateFormat('dd.MM.yyyy HH:mm').format(_eventStartDate!)),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: _pickStartDate,
-              ),
-              ListTile(
-                title: Text(_eventEndDate == null ? 'Select End' : DateFormat('dd.MM.yyyy HH:mm').format(_eventEndDate!)),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: _eventStartDate == null ? null : _pickEndDate,
-                enabled: _eventStartDate != null,
-              ),
-              
-              const SizedBox(height: 20),
-
-              Text("Ticket Types", style: Theme.of(context).textTheme.headlineSmall),
-              
-              const SizedBox(height: 8),        
-
-              Column(
-                children: _ticketTypes.asMap().entries.map((e) {
-                  int index = e.key;
-                  var ticket = e.value;
-
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        children: [
-                          TextFormField(
-                            initialValue: ticket.name,
-                            decoration: const InputDecoration(labelText: "Ticket Name"),
-                            validator: (v) => v == null || v.isEmpty ? "Required" : null,
-                            onChanged: (value) => ticket.name = value,
-                          ),
-
-                          TextFormField(
-                            initialValue: ticket.description,
-                            decoration: const InputDecoration(labelText: "Description (optional)"),
-                            onChanged: (value) => ticket.description = value,
-                          ),
-
-                          TextFormField(
-                            initialValue: ticket.price.toString(),
-                            decoration: const InputDecoration(labelText: "Price"),
-                            keyboardType: TextInputType.number,
-                            validator: (v) => v == null || v.isEmpty ? "Required" : null,
-                            onChanged: (value) => ticket.price = double.tryParse(value) ?? 0,
-                          ),
-
-                          TextFormField(
-                            initialValue: ticket.quantity.toString(),
-                            decoration: const InputDecoration(labelText: "Quantity"),
-                            keyboardType: TextInputType.number,
-                            validator: (v) => v == null || v.isEmpty ? "Required" : null,
-                            onChanged: (value) => ticket.quantity = int.tryParse(value) ?? 0,
-                          ),
-
-                          if(index > 0)
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton.icon(
-                                onPressed: () => _removeTicketType(index), 
-                                icon: const Icon(Icons.remove_circle, color: Colors.red), 
-                                label: const Text("Remove")
-                              ),
-                            )
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: _addTicketType,
-                  icon: const Icon(Icons.add),
-                  label: const Text("Add another ticket type"),
-                ),
-              ),
-            ],
+            )
           ),
         ),
       )
