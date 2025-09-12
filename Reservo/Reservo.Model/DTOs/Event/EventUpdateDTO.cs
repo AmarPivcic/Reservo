@@ -16,6 +16,6 @@ namespace Reservo.Model.DTOs.Event
         public DateTime? EndDate { get; set; }
         public int? CategoryId { get; set; }
         public int? VenueId { get; set; }
-        public List<TicketTypeInsertDTO>? TicketTypes { get; set; } = new();
+        public List<TicketTypeUpdateDTO>? TicketTypes { get; set; } = new();
     }
 }

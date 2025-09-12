@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reservo_organizer/src/models/event/event.dart';
@@ -64,6 +67,12 @@ Future<void> _activateEvent() async{
   @override
   Widget build(BuildContext context) {
     final dateFormatter = DateFormat('dd.MM.yyyy HH:mm');
+    Uint8List? imageBytes;
+
+    if(widget.eventData.image != null && widget.eventData.image!.isNotEmpty)
+    {
+      imageBytes = base64Decode(widget.eventData.image!);
+    }
 
     return MasterScreen(
       showBackButton: false,
@@ -79,15 +88,15 @@ Future<void> _activateEvent() async{
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: widget.eventData.image != null && widget.eventData.image!.isNotEmpty
-                        ? Image.network(
-                            widget.eventData.image!,
-                            height: 200,
-                            width: double.infinity,
+                        ? Image.memory(
+                            imageBytes!,
+                            height: 160,
+                            width: 200,
                             fit: BoxFit.cover,
                           )
                         : Container(
-                            height: 200,
-                            width: double.infinity,
+                            height: 160,
+                            width: 200,
                             color: Colors.grey[300],
                             child: const Icon(
                               Icons.image,

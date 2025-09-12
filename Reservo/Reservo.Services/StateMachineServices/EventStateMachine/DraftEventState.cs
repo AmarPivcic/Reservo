@@ -57,8 +57,6 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
                 var ticketType = _mapper.Map<TicketType>(ticketTypeDto);
                 ticketType.Event = entity;
 
-                System.Diagnostics.Debug.WriteLine($"TicketType: {ticketTypeDto.Name}, {ticketTypeDto.Description}, {ticketTypeDto.Price}, {ticketTypeDto.Quantity}");
-
                 entity.TicketTypes.Add(ticketType);
             }
 

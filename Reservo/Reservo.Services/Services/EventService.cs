@@ -102,6 +102,23 @@ namespace Reservo.Services.Services
             return await state.AllowedActions();
         }
 
+        public async Task CompleteExpiredEventsAsync()
+        {
+            var now = DateTime.Now;
+
+            var expiredEvents = _context.Events
+                .Where(e => e.State == "active" && e.EndDate < now)
+                .ToList();
+
+            foreach (var e in expiredEvents)
+                e.State = "completed";
+
+            if (expiredEvents.Count > 0)
+                await _context.SaveChangesAsync();
+
+            return;
+        }
+
         public override IQueryable<Event> AddFilter(IQueryable<Event> query, EventSearchObject? search = null)
         {
             if (search == null)

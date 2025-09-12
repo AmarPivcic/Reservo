@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
+using Reservo.API.HostedServices;
 using Reservo.Services.Database;
 using Reservo.Services.Interfaces;
 using Reservo.Services.Mapping;
@@ -103,6 +104,8 @@ var connectionString = builder.Configuration.GetConnectionString("ReservoConnect
 builder.Services.AddDbContext<ReservoContext>(options =>
     options.UseSqlServer(connectionString, sqlOptions => sqlOptions.MigrationsAssembly("Reservo.API"))
     );
+
+builder.Services.AddHostedService<EventStateUpdater>();
 
 var app = builder.Build();
 

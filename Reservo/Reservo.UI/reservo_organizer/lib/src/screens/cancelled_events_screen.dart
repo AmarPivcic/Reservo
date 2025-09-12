@@ -3,28 +3,28 @@ import 'package:provider/provider.dart';
 import 'package:reservo_organizer/src/providers/event_provider.dart';
 import 'package:reservo_organizer/src/screens/event_list_screen.dart';
 
-class PreviousEventsScreen extends StatefulWidget {
-const PreviousEventsScreen({super.key});
+class CancelledEventsScreen extends StatefulWidget {
+const CancelledEventsScreen({super.key});
 
   @override
-  State<PreviousEventsScreen> createState() => _PreviousEventsScreenState();
+  State<CancelledEventsScreen> createState() => _CancelledEventsScreenState();
 }
 
-class _PreviousEventsScreenState extends State<PreviousEventsScreen> {
+class _CancelledEventsScreenState extends State<CancelledEventsScreen> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final ep = context.read<EventProvider>();
-      ep.getEvents(state: "completed");
+      ep.getEvents(state: "cancelled");
     });
 }
 
   @override
     Widget build(BuildContext context) {
       return const EventListScreen(
-        title: "Completed Events",
-        state: "completed",
+        title: "Cancelled Events",
+        state: "cancelled",
       );
     }
 }

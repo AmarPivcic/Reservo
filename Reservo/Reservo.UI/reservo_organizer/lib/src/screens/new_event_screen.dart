@@ -9,6 +9,9 @@ import 'package:reservo_organizer/src/providers/event_provider.dart';
 import 'package:reservo_organizer/src/providers/venue_provider.dart';
 import 'package:reservo_organizer/src/screens/event_details_screen.dart';
 import 'package:reservo_organizer/src/screens/master_screen.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 
 class NewEventScreen extends StatefulWidget{
@@ -33,6 +36,8 @@ class _NewEventScreenState extends State<NewEventScreen>{
   String? _categoryName;
   String? _cityName;
   String? _venueName;
+  File? _pickedImageFile;
+  final ImagePicker _picker = ImagePicker();
 
 
   List<TicketTypeInsert> _ticketTypes = [];
@@ -120,6 +125,21 @@ void _saveEvent() async {
       builder: (_) => EventDetailsScreen(eventData: newEvent)
     )
   );
+}
+
+Future<void> _pickImage() async {
+  final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+  if (pickedFile != null) {
+    final file = File(pickedFile.path);
+    final bytes = await file.readAsBytes();
+    final base64Image = base64Encode(bytes);
+
+    setState(() {
+      _pickedImageFile = file;
+      _image = base64Image;
+    });
+  }
 }
 
 Future<void> _pickStartDate() async {
@@ -298,6 +318,29 @@ Future<void> _pickStartDate() async {
                     trailing: const Icon(Icons.calendar_today),
                     onTap: _eventStartDate == null ? null : _pickEndDate,
                     enabled: _eventStartDate != null,
+                  ),
+
+                  const SizedBox(height: 20),
+                  
+                  Text("Event Image", style: Theme.of(context).textTheme.headline6),
+
+                  const SizedBox(height: 10),
+
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: _pickedImageFile == null
+                        ? Container(
+                            height: 160,
+                            width: 340,
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.add_a_photo, size: 50, color: Colors.black54),
+                          )
+                        : Image.file(
+                            _pickedImageFile!,
+                            height: 160,
+                            width: 340,
+                            fit: BoxFit.cover,
+                          ),
                   ),
 
                   const SizedBox(height: 20),

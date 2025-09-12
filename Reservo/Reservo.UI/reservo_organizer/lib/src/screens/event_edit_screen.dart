@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:reservo_organizer/src/models/event/event.dart';
 import 'package:reservo_organizer/src/models/event/event_insert_update.dart';
@@ -34,11 +38,14 @@ class _EventEditScreenState extends State<EventEditScreen> {
   DateTime? _eventStartDate;
   DateTime? _eventEndDate;
   int? _cityId;
+  File? _pickedImageFile;
+  final ImagePicker _picker = ImagePicker();
 
   List<TicketType> _ticketTypes = [];
 
   bool _isSaving = false;
   bool _isActivating = false;
+  bool _isSaved = false;
 
   @override
   void initState() {
@@ -129,6 +136,7 @@ Future<void> _pickStartDate() async {
       _eventStartDate = fullDate;
       if (_eventEndDate != null && _eventEndDate!.isBefore(fullDate)) {
         _eventEndDate = null;
+        _isSaved = false;
       }
     });
   }
@@ -167,8 +175,25 @@ Future<void> _pickStartDate() async {
 
     setState(() {
       _eventEndDate = fullDate;
+      _isSaved = false;
     });
   }
+
+  Future<void> _pickImage() async {
+  final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+  if (pickedFile != null) {
+    final file = File(pickedFile.path);
+    final bytes = await file.readAsBytes();
+    final base64Image = base64Encode(bytes);
+
+    setState(() {
+      _pickedImageFile = file;
+      _eventImage = base64Image;
+      _isSaved = false;
+    });
+  }
+}
 
   void _addTicketType() {
   setState(() {
@@ -186,6 +211,7 @@ void _removeTicketType(int index) {
     if(_ticketTypes.length <= 1) return;
     setState(() {
       _ticketTypes.removeAt(index);
+      _isSaved = false;
     });
 }
 
@@ -259,6 +285,7 @@ Future<void> _saveChanges() async {
 
   setState(() {
     _isSaving = true;
+    _isSaved = true;
   });
 
   try {
@@ -309,6 +336,12 @@ Future<void> _saveChanges() async {
     final categoryProvider = context.watch<CategoryProvider>();
     final cityProvider = context.watch<CityProvider>();
     final venueProvider = context.watch<VenueProvider>();
+    Uint8List? imageBytes;
+
+    if(_eventImage != null && _eventImage!.isNotEmpty)
+    {
+      imageBytes = base64Decode(_eventImage!);
+    }
 
     return MasterScreen(
       showBackButton: false,
@@ -329,12 +362,12 @@ Future<void> _saveChanges() async {
                       Row(
                         children: [
                           OutlinedButton(
-                            onPressed: _isSaving ? null : _revertStateAndClose, 
+                            onPressed: _isSaved ? null : _revertStateAndClose, 
                             child: const Text("Cancel")
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
-                            onPressed: _isSaving ? null : _saveChanges, 
+                            onPressed: _isSaved ? null : _saveChanges, 
                             child: const Text("Save")
                           ),
                           const SizedBox(width: 8),
@@ -349,23 +382,31 @@ Future<void> _saveChanges() async {
 
                   const SizedBox(height: 16),
 
-                  if (_eventImage != null && _eventImage!.isNotEmpty)
-                    Container(
-                      height: 160,
-                    width: double.infinity,
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.grey[200]),
-                    child: const Center(child: Text("Image preview (not editable)")),
-                    )
-                  else
-                    Container(height: 160, width: double.infinity, color: Colors.grey[100], child: Center(child: Text("No image"))),
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: _pickedImageFile == null
+                    ? Image.memory(
+                        imageBytes!,
+                        width: 340,
+                        height: 160,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.file(
+                        _pickedImageFile!,
+                        height: 160,
+                        width: 340,
+                        fit: BoxFit.cover,
+                      ),
+                  ),
 
-                    const SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
                   TextFormField(
                     initialValue: _eventName,
                     decoration: const InputDecoration(labelText: "Event name"),
                     validator: (v) => v == null || v.isEmpty ? "Required" : null,
                     onSaved: (v) => _eventName = v!.trim(),
+                    onChanged: (_) => setState(() => _isSaved = false),
                   ),
 
                   const SizedBox(height: 8),
@@ -373,6 +414,7 @@ Future<void> _saveChanges() async {
                     initialValue: _eventDescription,
                     decoration: const InputDecoration(labelText: "Description"),
                     onSaved: (v) => _eventDescription = v,
+                    onChanged: (_) => setState(() => _isSaved = false),
                   ),
 
                   const SizedBox(height: 8),
@@ -383,7 +425,12 @@ Future<void> _saveChanges() async {
                     items: categoryProvider.categories
                         .map((c) => DropdownMenuItem<int>(value: c.id, child: Text(c.name)))
                         .toList(),
-                    onChanged: (val) => setState(() => _categoryId = val),
+                    onChanged: (val) { 
+                      setState(() {
+                        _categoryId = val;
+                        _isSaved = false;
+                      });
+                    },
                     validator: (v) => v == null ? "Required" : null,
                   ),
                   
@@ -401,6 +448,7 @@ Future<void> _saveChanges() async {
                       setState(() {
                         _cityId = val;
                         _venueId = null;
+                        _isSaved = false;
                       });
                       await venueProvider.getVenuesByCity(val!);
                     },
@@ -419,7 +467,12 @@ Future<void> _saveChanges() async {
                             )).toList(),
                     onChanged: _cityId == null
                         ? null
-                        : (val) => setState(() => _venueId = val),
+                        : (val) { 
+                      setState(() {
+                        _venueId = val;
+                        _isSaved = false;
+                      });
+                    },
                     validator: (v) => v == null ? "Required" : null,
                   ),
 
@@ -458,13 +511,23 @@ Future<void> _saveChanges() async {
                                 initialValue: ticket.name,
                                 decoration: const InputDecoration(labelText: "Ticket Name"),
                                 validator: (v) => v == null || v.isEmpty ? "Required" : null,
-                                onChanged: (value) => ticket.name = value,
+                                onChanged: (val) { 
+                                  setState(() {
+                                    ticket.name = val;
+                                    _isSaved = false;
+                                  });
+                                },
                               ),
 
                               TextFormField(
                                 initialValue: ticket.description,
                                 decoration: const InputDecoration(labelText: "Description (optional)"),
-                                onChanged: (value) => ticket.description = value,
+                                onChanged: (val) { 
+                                  setState(() {
+                                    ticket.description = val;
+                                    _isSaved = false;
+                                  });
+                                }
                               ),
 
                               TextFormField(
@@ -472,7 +535,12 @@ Future<void> _saveChanges() async {
                                 decoration: const InputDecoration(labelText: "Price"),
                                 keyboardType: TextInputType.number,
                                 validator: (v) => v == null || v.isEmpty ? "Required" : null,
-                                onChanged: (value) => ticket.price = double.tryParse(value) ?? 0,
+                                onChanged: (val) { 
+                                  setState(() {
+                                    ticket.price = double.tryParse(val) ?? 0.0;
+                                    _isSaved = false;
+                                  });
+                                },
                               ),
 
                               TextFormField(
@@ -480,7 +548,12 @@ Future<void> _saveChanges() async {
                                 decoration: const InputDecoration(labelText: "Quantity"),
                                 keyboardType: TextInputType.number,
                                 validator: (v) => v == null || v.isEmpty ? "Required" : null,
-                                onChanged: (value) => ticket.quantity = int.tryParse(value) ?? 0,
+                                onChanged: (val) { 
+                                  setState(() {
+                                    ticket.quantity = int.tryParse(val) ?? 0;
+                                    _isSaved = false;
+                                  });
+                                },
                               ),
 
                               if(index > 0)
