@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -331,17 +330,63 @@ Future<void> _saveChanges() async {
   }
 }
 
+Future<void> _cancelEventPopUp() async {
+  showDialog(
+    context: context, 
+    builder: (_) => AlertDialog(
+      title: const Text("Warning!"),
+      content: const Text("If you cancel this event, you will not be able to activate it again!."),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close")),
+        OutlinedButton(onPressed: () {_cancelEvent(); Navigator.pop(context);}, child: const Text("Cancel event"), style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              side: const BorderSide(color: Colors.red),
+                            ),),  
+      ],
+    )
+  );
+}
+
+Future<void> _cancelEvent() async {
+  final ep = context.read<EventProvider>();
+  try {
+    await ep.cancelEvent(widget.eventData.id);
+    await showDialog(
+      context: context, 
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("Cancelled"),
+        content: const Text("Event cancelled successfully."),
+        actions: [
+         TextButton(onPressed: () {
+            Navigator.pop(dialogContext);
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
+              (route) => false
+            );
+            }, child: const Text("OK"))
+        ],
+      )
+    );
+  } catch (e) {
+    await showDialog(
+      context: context, 
+      builder: (_) => AlertDialog(
+        title: const Text("Error"),
+        content: Text("Failed to cancel the event: $e"),
+        actions: [
+          TextButton(onPressed: () {
+            Navigator.pop(context);
+            }, child: const Text("OK"))
+        ],
+      ));
+  } 
+}
+
   @override
   Widget build(BuildContext context) {
     final categoryProvider = context.watch<CategoryProvider>();
     final cityProvider = context.watch<CityProvider>();
     final venueProvider = context.watch<VenueProvider>();
-    Uint8List? imageBytes;
-
-    if(_eventImage != null && _eventImage!.isNotEmpty)
-    {
-      imageBytes = base64Decode(_eventImage!);
-    }
 
     return MasterScreen(
       showBackButton: false,
@@ -362,8 +407,20 @@ Future<void> _saveChanges() async {
                       Row(
                         children: [
                           OutlinedButton(
-                            onPressed: _isSaved ? null : _revertStateAndClose, 
-                            child: const Text("Cancel")
+                            onPressed: _cancelEventPopUp,
+                            child: const Text("Cancel event"),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              side: const BorderSide(color: Colors.red),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Tooltip(
+                            message: "Closes the screen. If changes are saved, event stays as draft. If event is not saved, changes are discarded.", 
+                            child: OutlinedButton(
+                              onPressed: _revertStateAndClose,
+                              child: const Text("Close"),
+                            ),
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
@@ -384,19 +441,26 @@ Future<void> _saveChanges() async {
 
                   GestureDetector(
                     onTap: _pickImage,
-                    child: _pickedImageFile == null
-                    ? Image.memory(
-                        imageBytes!,
-                        width: 340,
-                        height: 160,
-                        fit: BoxFit.cover,
-                      )
-                    : Image.file(
-                        _pickedImageFile!,
-                        height: 160,
-                        width: 340,
-                        fit: BoxFit.cover,
-                      ),
+                    child: _pickedImageFile != null
+                    ? Image.file(
+                          _pickedImageFile!,
+                          height: 180,
+                          width: 240,
+                          fit: BoxFit.cover,
+                        )
+                      : (_eventImage == null || _eventImage!.isEmpty 
+                          ? Container(
+                              height: 180,
+                              width: 220,
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.add_a_photo, size: 50, color: Colors.black54),
+                            )
+                          : Image.memory(
+                              base64Decode(_eventImage!),
+                              height: 180,
+                              width: 220,
+                              fit: BoxFit.cover,
+                            ))
                   ),
 
                   const SizedBox(height: 12),

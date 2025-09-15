@@ -120,6 +120,29 @@ class EventProvider extends BaseProvider<Event, Event>
     }
   }
 
+  Future<Event> cancelEvent(int eventId) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('${BaseProvider.baseUrl}/Event/$eventId/Cancel'),
+        headers: await createHeaders(),
+      );
+
+      if(response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final event = Event.fromJson(data);
+        return event;
+      }
+      else {
+        handleHttpError(response);
+        throw Exception('Cancel failed');
+      }
+    } on CustomException {
+      rethrow;
+    } catch (e) { 
+      throw CustomException("Can't reach the server. Please check your connection.");
+    }
+  }
+
   Future<Event> setEventActive(int eventId) async {
     return await activateEvent(eventId);
   }

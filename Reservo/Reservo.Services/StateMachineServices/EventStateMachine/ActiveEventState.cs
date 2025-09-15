@@ -18,13 +18,29 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
         {
         }
 
-        public async override Task<EventGetDTO> Cancel(Event entity)
+        public override async Task<EventGetDTO> Cancel(int id)
         {
-            entity.State = "cancelled";
+            var entity = _context.Events.FirstOrDefault(e => e.Id == id);
 
-            await _context.SaveChangesAsync();
+            if (entity != null)
+            {
+                entity.State = "cancelled";
 
-            return _mapper.Map<EventGetDTO>(entity);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new UserException("Event not found!");
+            }
+
+            var updatedEntity = _context.Events
+                .Include(e => e.TicketTypes)
+                .Include(e => e.Category)
+                .Include(e => e.Venue)
+                .Include(e => e.User)
+                .FirstOrDefault(e => e.Id == id);
+
+            return _mapper.Map<EventGetDTO>(updatedEntity);
         }
 
         public async override Task<EventGetDTO> Activate(int id)

@@ -229,6 +229,28 @@ Future<void> _pickStartDate() async {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text("Event Image", style: Theme.of(context).textTheme.headline6),
+
+                  const SizedBox(height: 10),
+
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: _pickedImageFile == null
+                        ? Container(
+                            height: 160,
+                            width: 340,
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.add_a_photo, size: 50, color: Colors.black54),
+                          )
+                        : Image.file(
+                            _pickedImageFile!,
+                            height: 160,
+                            width: 340,
+                            fit: BoxFit.cover,
+                          ),
+                  ),
+
+                  const SizedBox(height: 20),
                   Text("Event Info", style: Theme.of(context).textTheme.headline6),
                   TextFormField(
                     decoration: const InputDecoration(labelText: "Event Name"),
@@ -318,29 +340,6 @@ Future<void> _pickStartDate() async {
                     trailing: const Icon(Icons.calendar_today),
                     onTap: _eventStartDate == null ? null : _pickEndDate,
                     enabled: _eventStartDate != null,
-                  ),
-
-                  const SizedBox(height: 20),
-                  
-                  Text("Event Image", style: Theme.of(context).textTheme.headline6),
-
-                  const SizedBox(height: 10),
-
-                  GestureDetector(
-                    onTap: _pickImage,
-                    child: _pickedImageFile == null
-                        ? Container(
-                            height: 160,
-                            width: 340,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.add_a_photo, size: 50, color: Colors.black54),
-                          )
-                        : Image.file(
-                            _pickedImageFile!,
-                            height: 160,
-                            width: 340,
-                            fit: BoxFit.cover,
-                          ),
                   ),
 
                   const SizedBox(height: 20),

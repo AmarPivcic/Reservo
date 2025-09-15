@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reservo_organizer/src/providers/auth_provider.dart';
-import 'package:reservo_organizer/src/screens/login_screen.dart';
+import 'package:reservo_organizer/src/screens/edit_account_screen.dart';
 
 class MasterScreen extends StatelessWidget {
   final Widget child;
   final bool showBackButton;
+  final bool showMyAccountButton;
   final List<Widget>? actions;
 
-  MasterScreen({super.key, required this.child, this.showBackButton = false, this.actions});
+  MasterScreen({super.key, required this.child, this.showBackButton = false, this.showMyAccountButton = true, this.actions});
 
   @override
   Widget build(BuildContext context) {
@@ -43,17 +44,16 @@ class MasterScreen extends StatelessWidget {
             if(actions != null)
               Row(children: actions!),
               
-            if (authProvider.isLoggedIn)
+            if (authProvider.isLoggedIn && showMyAccountButton)
               TextButton.icon(
                 onPressed: () {
-                  authProvider.logout();
-                  Navigator.pushReplacement(
+                  Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    MaterialPageRoute(builder: (_) => const EditAccountScreen()),
                   );
                 },
-                icon: const Icon(Icons.logout, color: Colors.white),
-                label: const Text("Logout", style: TextStyle(color: Colors.white)),
+                icon: const Icon(Icons.account_circle, color: Colors.white),
+                label: const Text("My account", style: TextStyle(color: Colors.white)),
               ),
           ],
         ),

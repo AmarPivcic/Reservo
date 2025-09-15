@@ -39,10 +39,8 @@ namespace Reservo.API.Controllers
         }
 
         [HttpPut("UpdateByToken")]
-        public async Task<UserGetDTO> UpdateByToken(UserUpdateDTO request)
+        public async Task<UserGetDTO> UpdateByToken([FromBody]UserUpdateDTO request)
         {
-            string? username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            request.Username = username;
             return await (_service as IUserService).UpdateByToken(request);
         }
 
@@ -82,6 +80,20 @@ namespace Reservo.API.Controllers
         public async Task ChangeActiveStatus(int id)
         {
             await (_service as IUserService).ChangeActiveStatus(id);
+        }
+
+        [HttpGet("GetCurrentUser")]
+        public async Task<UserGetDTO> GetCurrentUser()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+            {
+                return await (_service as IUserService).GetCurrentUser(userId);
+            }
+
+            throw new Exception("User can't be found!");
+            
         }
     }
 }

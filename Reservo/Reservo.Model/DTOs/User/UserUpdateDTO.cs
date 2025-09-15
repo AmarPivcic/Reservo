@@ -16,6 +16,7 @@ namespace Reservo.Model.DTOs.User
         public string? Gender { get; set; }
         public string? Address { get; set; }
         public string? PostalCode { get; set; }
-        public string? City { get; set; }
+        public string? Image { get; set; }
+        public int? CityId { get; set; }
     }
 }

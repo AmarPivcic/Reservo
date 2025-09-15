@@ -82,12 +82,12 @@ namespace Reservo.Services.Services
         public async Task<EventGetDTO> Cancel(int id)
         {
             var entity = await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
-            
-            if(entity != null)
+
+            if (entity != null)
             {
                 var state = _baseEventState.CreateState(entity.State);
 
-                return await state.Cancel(entity);
+                return await state.Cancel(id);
             }
             else
             {

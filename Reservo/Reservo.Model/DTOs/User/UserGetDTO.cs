@@ -22,6 +22,7 @@ namespace Reservo.Model.DTOs.User
         public string? Image { get; set; }
         public string? Role { get; set; }
         public string? City { get; set; }
+        public int? CityId { get; set; }
         public bool? Active { get; set; }
     }
 }

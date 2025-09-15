@@ -20,13 +20,17 @@ namespace Reservo.Services.Mapping
             CreateMap<UserUpdateDTO, User>()
                 .ForMember(dest => dest.Username, opt => opt.Ignore())
                 .ForMember(dest => dest.City, opt => opt.Ignore())
+                .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.Image != null ? Convert.FromBase64String(src.Image) : null))
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
             CreateMap<UserGetDTO, User>();
             CreateMap<User, UserInsertDTO>();
-            CreateMap<User, UserUpdateDTO>();
+            CreateMap<User, UserUpdateDTO>()
+                .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.Image != null ? Convert.ToBase64String(src.Image) : string.Empty));
+
             CreateMap<User, UserGetDTO>()
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.Name))
                 .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City.Name))
+                .ForMember(dest => dest.CityId, opt => opt.MapFrom(src => src.City.Id))
                 .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.Image != null ? Convert.ToBase64String(src.Image) : string.Empty));
         }
     }

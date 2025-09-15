@@ -8,11 +8,8 @@ using Reservo.Model.Utilities;
 using Reservo.Services.Database;
 using Reservo.Services.Interfaces;
 using Reservo.Services.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Security.Claims;
+
 
 namespace Reservo.Services.Services
 {
@@ -204,30 +201,18 @@ namespace Reservo.Services.Services
             {
                 _mapper.Map(request, entity);
 
-                if (!string.IsNullOrEmpty(request.City))
+                if (request.CityId != null)
                 {
-                    City? city = await _context.Cities.FirstOrDefaultAsync(c => c.Name.ToLower() == request.City.ToLower());
+                    City? city = await _context.Cities.FirstOrDefaultAsync(c => c.Id == request.CityId);
 
                     if (city != null)
                     {
                         entity.CityId = city.Id;
                     }
-                    else
-                    {
-                        var citySet = _context.Set<City>();
-                        City newCity = new City
-                        {
-                            Name = request.City
-                        };
-                        await citySet.AddAsync(newCity);
-                        await _context.SaveChangesAsync();
-
-                        entity.CityId = newCity.Id;
-                    }
                 }
                 await _context.SaveChangesAsync();
 
-                return _mapper.Map<UserGetDTO>(request);
+                return _mapper.Map<UserGetDTO>(entity);
             }
 
             else
@@ -278,6 +263,14 @@ namespace Reservo.Services.Services
             {
                 throw new UserException("This username is already in use.");
             }
+        }
+
+        public async Task<UserGetDTO> GetCurrentUser(int id)
+        {
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .Include(u => u.City).FirstOrDefaultAsync(u => u.Id == id);
+            return _mapper.Map<UserGetDTO>(user);  
         }
     }
 }
