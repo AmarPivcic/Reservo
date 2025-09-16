@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Reservo.Model.DTOs.Venue;
 using Reservo.Model.Entities;
 using Reservo.Model.SearchObjects;
@@ -24,8 +25,10 @@ namespace Reservo.Services.Services
             if (search == null)
                 return query;
 
-            if (search.CityID.HasValue)
-                query = query.Where(v => v.CityID == search.CityID);
+            if (search.CityId.HasValue)
+                query = query.Where(v => v.CityId == search.CityId);
+            if (search.CategoryId.HasValue)
+                query = query.Where(v => v.AllowedCategories.Any(vc => vc.CategoryId == search.CategoryId));
 
             return query.OrderBy(v => v.Name);
         }

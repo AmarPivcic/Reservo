@@ -159,7 +159,7 @@ namespace Reservo.Services.Services
         {
             var set = _context.Set<User>();
 
-            var entity = await set.FirstOrDefaultAsync(u => u.Username == request.Username);
+            var entity = await set.FirstOrDefaultAsync(u => u.Id == request.userId);
 
             if(entity != null )
             {
@@ -184,6 +184,8 @@ namespace Reservo.Services.Services
                     entity.PasswordSalt = Hashing.GenerateSalt();
                     entity.PasswordHash = Hashing.GenerateHash(entity.PasswordSalt, request.NewPassword);
                 }
+
+                await _context.SaveChangesAsync();
             }
             else
             {

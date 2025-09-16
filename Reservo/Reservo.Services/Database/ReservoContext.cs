@@ -29,6 +29,8 @@ namespace Reservo.Services.Database
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<TicketType> TicketTypes { get; set; }
         public DbSet<Venue> Venues { get; set; }
+        public DbSet<VenueCategory> VenueCategories { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -51,6 +53,19 @@ namespace Reservo.Services.Database
                 .WithMany()
                 .HasForeignKey(e => e.OrganizerId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<VenueCategory>()
+                .HasKey(vc => new { vc.VenueId, vc.CategoryId });
+
+            modelBuilder.Entity<VenueCategory>()
+                .HasOne(vc => vc.Venue)
+                .WithMany(v => v.AllowedCategories)
+                .HasForeignKey(vc => vc.VenueId);
+
+            modelBuilder.Entity<VenueCategory>()
+                .HasOne(vc => vc.Category)
+                .WithMany(c => c.Venues)
+                .HasForeignKey(vc => vc.CategoryId);
         }
     }
 }

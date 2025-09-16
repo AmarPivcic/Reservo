@@ -76,9 +76,9 @@ void _removeTicketType(int index) {
     });
 }
 
-Future<void> _fetchVenuesForCity(int cityId) async {
+Future<void> _fetchVenues(int? cityId, int? categoryId) async {
   final vp = context.read<VenueProvider>();
-  await vp.getVenuesByCity(cityId);
+  await vp.getVenues(cityId, categoryId);
 }
 
 void _saveEvent() async {
@@ -272,11 +272,16 @@ Future<void> _pickStartDate() async {
                             value: c.id,
                             child: Text(c.name)
                           )).toList(),
-                    onChanged: (val) => setState(() {
-                      _categoryId = val;
-                      _categoryName = categoryProvider.categories.firstWhere((c) =>
-                      c.id == val).name;
-                      }),
+                    onChanged: (val) async {
+                      setState(() {
+                        _categoryId = val;
+                        _categoryName = categoryProvider.categories.firstWhere((c) =>
+                        c.id == val).name;
+                        _venueId = null;
+                        _venueName = null;
+                      });
+                      await _fetchVenues(_cityId, _categoryId);
+                    },
                     validator: (v) => v == null ? "Required" : null,
                   ),
 
@@ -297,7 +302,7 @@ Future<void> _pickStartDate() async {
                         _venueId = null;
                         _venueName = null;
                       });
-                      await _fetchVenuesForCity(val!);
+                      await _fetchVenues(_cityId, _categoryId);
                     },
                     validator: (v) => v == null ? "Required" : null
                   ),
@@ -310,7 +315,7 @@ Future<void> _pickStartDate() async {
                             value: v.id,
                             child: Text(v.name),
                             )).toList(),
-                    onChanged: _cityId == null
+                    onChanged: (_cityId  == null || _categoryId == null)
                         ? null
                         : (val) => setState(() {
                             _venueId = val;

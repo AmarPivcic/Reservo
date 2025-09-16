@@ -21,7 +21,7 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
       role: json['role'] as String?,
       city: json['city'] as String?,
       active: json['active'] as bool?,
-      cityId: json['cityId'] as int?,
+      cityId: (json['cityId'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{

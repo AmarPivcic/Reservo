@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:reservo_organizer/src/models/user/user.dart';
 import 'package:reservo_organizer/src/models/user/user_update.dart';
+import 'package:reservo_organizer/src/models/user/user_update_password.dart';
 import 'package:reservo_organizer/src/providers/base_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:reservo_organizer/src/utilities/custom_exception.dart';
 
 class UserProvider extends BaseProvider<User, User>
 {
@@ -43,6 +45,30 @@ class UserProvider extends BaseProvider<User, User>
       }
     } catch (e) {
      throw Exception("Error fetching user: $e");
+    }
+  }
+
+  Future changePassword(UserUpdatePassword dto) async {
+    try {
+      final response = await http.put(
+        Uri.parse('${BaseProvider.baseUrl}/User/UpdatePasswordByToken'),
+        headers: await createHeaders(),
+        body: jsonEncode(dto.toJson())
+      );
+
+      if(response.statusCode == 200){
+        return null;
+      }
+
+      else {
+        handleHttpError(response);
+        throw Exception('Change failed');
+      }
+
+    } on CustomException {
+      rethrow;
+    } catch (e) { 
+      throw CustomException("$e");
     }
   }
 }

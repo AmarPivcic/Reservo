@@ -6,8 +6,7 @@ part of 'user_update.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-UserUpdate _$UserUpdateFromJson(Map<String, dynamic> json) =>
-    UserUpdate(
+UserUpdate _$UserUpdateFromJson(Map<String, dynamic> json) => UserUpdate(
       username: json['username'] as String?,
       name: json['name'] as String?,
       surname: json['surname'] as String?,

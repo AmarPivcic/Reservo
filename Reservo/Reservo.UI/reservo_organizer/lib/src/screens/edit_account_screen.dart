@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:reservo_organizer/src/models/user/user.dart';
 import 'package:reservo_organizer/src/models/user/user_update.dart';
+import 'package:reservo_organizer/src/models/user/user_update_password.dart';
 import 'package:reservo_organizer/src/providers/auth_provider.dart';
 import 'package:reservo_organizer/src/providers/city_provider.dart';
 import 'package:reservo_organizer/src/providers/user_provider.dart';
@@ -22,6 +23,7 @@ class EditAccountScreen extends StatefulWidget {
 class _EditAccountScreenState extends State<EditAccountScreen> {
 
   final _formKey = GlobalKey<FormState>();
+  final _pwformKey = GlobalKey<FormState>();
 
   User? user;
 
@@ -38,6 +40,10 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _postalCodeController = TextEditingController();
+  final TextEditingController _oldPasswordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
 
   @override
   void initState() {
@@ -80,72 +86,196 @@ void dispose() {
   Future<void> _pickImage() async {
   final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
-  if (pickedFile != null) {
-    final file = File(pickedFile.path);
-    final bytes = await file.readAsBytes();
-    final base64Image = base64Encode(bytes);
+    if (pickedFile != null) {
+      final file = File(pickedFile.path);
+      final bytes = await file.readAsBytes();
+      final base64Image = base64Encode(bytes);
 
-    setState(() {
-      _pickedImage = file;
-      _userImage = base64Image;
-    });
+      setState(() {
+        _pickedImage = file;
+        _userImage = base64Image;
+      });
+    }
   }
-}
 
-Future<void> _save() async {
-    if (_formKey.currentState!.validate()) {
-      final dto = UserUpdate(
-        username: _username,
-        name: _nameController.text.trim(),
-        surname: _surnameController.text.trim(),
-        email: _emailController.text.trim(),
-        phone: _phoneController.text.trim(),
-        gender: _selectedGender,
-        address: _addressController.text.trim(),
-        postalCode: _postalCodeController.text.trim(),
-        image: _userImage,
-        cityId: _cityId,
+  Future<void> _save() async {
+      if (_formKey.currentState!.validate()) {
+        final dto = UserUpdate(
+          username: _username,
+          name: _nameController.text.trim(),
+          surname: _surnameController.text.trim(),
+          email: _emailController.text.trim(),
+          phone: _phoneController.text.trim(),
+          gender: _selectedGender,
+          address: _addressController.text.trim(),
+          postalCode: _postalCodeController.text.trim(),
+          image: _userImage,
+          cityId: _cityId,
+        );
+
+        try {
+          final updated = await Provider.of<UserProvider>(context, listen: false).updateUser(dto);
+          
+          setState(() {
+            user!.name = updated.name;
+            user!.surname = updated.surname;
+            user!.username = updated.username;
+            user!.email = updated.email;
+            user!.phone = updated.phone;
+            user!.gender = updated.gender;
+            user!.address = updated.address;
+            user!.postalCode = updated.postalCode;
+            user!.image = updated.image;
+            user!.cityId = updated.cityId;
+          });
+
+          await showDialog(
+        context: context, 
+        builder: (_) => AlertDialog(
+          title: const Text("Saved"),
+          content: const Text("User updated successfully."),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))      
+          ],
+        )
       );
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error saving changes: $e')),
+          );
+        }
+      }
+  }
 
-      try {
-        final updated = await Provider.of<UserProvider>(context, listen: false).updateUser(dto);
-        
-        setState(() {
-          user!.name = updated.name;
-          user!.surname = updated.surname;
-          user!.username = updated.username;
-          user!.email = updated.email;
-          user!.phone = updated.phone;
-          user!.gender = updated.gender;
-          user!.address = updated.address;
-          user!.postalCode = updated.postalCode;
-          user!.image = updated.image;
-          user!.cityId = updated.cityId;
-        });
+  Future<void> _changePasswordPopUp() async {
 
-        await showDialog(
-      context: context, 
+    UserUpdatePassword dto =  UserUpdatePassword();
+
+    showDialog(
+      context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Saved"),
-        content: const Text("User updated successfully."),
+        title: const Text("Change password"),
+        content: SingleChildScrollView(
+          child: IntrinsicHeight(
+            child: Form(
+              key: _pwformKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min, // important
+                children: [
+                  TextFormField(
+                    controller: _oldPasswordController,
+                    decoration: const InputDecoration(labelText: "Old password"),
+                    validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                    obscureText: true,
+                    onSaved: (v) => dto.oldPassword = v,
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _newPasswordController,
+                    decoration: const InputDecoration(labelText: "New password"),
+                    validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                    obscureText: true,
+                    onSaved: (v) => dto.newPassword = v,
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _confirmPasswordController,
+                    decoration: const InputDecoration(labelText: "Confirm new password"),
+                    validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                    obscureText: true,
+                    onSaved: (v) => dto.confirmNewPassword = v,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))      
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          OutlinedButton(onPressed: () {_changePassword(dto);}, child: const Text("Save"))
+        ]
+      )
+    );
+  }
+
+  Future<void> _changePassword(UserUpdatePassword dto) async {
+    final up = context.read<UserProvider>();
+    final ap = context.read<AuthProvider>();
+
+    if (!_pwformKey.currentState!.validate()) return;
+    _pwformKey.currentState!.save();
+
+    try {
+      await up.changePassword(dto);
+      await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("Success!"),
+          content: const Text("Password changed successfully. Please log in again."),
+          actions: [
+            OutlinedButton(onPressed: () {
+              ap.logout();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            }, 
+            child: const Text("OK")
+            )
+          ],
+        )
+      );
+    } catch (e) {
+      _oldPasswordController.clear();
+      _newPasswordController.clear();
+      _confirmPasswordController.clear();
+      
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text("Error"),
+          content: Text("$e"),
+          actions: [
+            OutlinedButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text("Close"),
+            )
+          ],
+        )
+      );
+    }
+  }
+
+  Future<void> _logout() async {
+    final authProvider = context.read<AuthProvider>();
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Logout"),
+        content: const Text("Are you sure you want to log out?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context), 
+            child: const Text("Close")),
+          OutlinedButton(
+            onPressed: ()  {
+              authProvider.logout();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            },
+            child: const Text("Logout"),
+          )
         ],
       )
     );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving changes: $e')),
-        );
-      }
-    }
   }
 
   @override
     Widget build(BuildContext context) {
     final cityProvider = context.watch<CityProvider>();
-    final authProvider = context.watch<AuthProvider>();
-
+    
      return MasterScreen(
       showBackButton: false,
       showMyAccountButton: false,
@@ -258,6 +388,12 @@ Future<void> _save() async {
                     validator: (val) => val == null ? "Please select city" : null,
                   ),
                   const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: _changePasswordPopUp,
+                    icon: const Icon(Icons.password, color: Colors.white),
+                    label: const Text("Change password", style: TextStyle(color: Colors.white)),
+                  ),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -273,13 +409,7 @@ Future<void> _save() async {
                   ),
                   const SizedBox(height: 16),
                   TextButton.icon(
-                    onPressed: () {
-                      authProvider.logout();
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      );
-                    },
+                    onPressed: _logout,
                     icon: const Icon(Icons.logout, color: Colors.white),
                     label: const Text("Logout", style: TextStyle(color: Colors.white)),
                   ),

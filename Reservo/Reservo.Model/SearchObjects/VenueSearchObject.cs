@@ -8,6 +8,7 @@ namespace Reservo.Model.SearchObjects
 {
     public class VenueSearchObject : BaseSearchObject
     {
-        public int? CityID { get; set; }
+        public int? CityId { get; set; }
+        public int? CategoryId { get; set; }
     }
 }

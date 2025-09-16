@@ -174,25 +174,37 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
     }
   }
 
-    void handleHttpError(http.Response response) {
+  void handleHttpError(http.Response response) {
     if (response.statusCode != 200) {
-      final responseBody = jsonDecode(response.body);
-      final errors = responseBody['errors'] as Map<String, dynamic>?;
+      String errorMessage = 'Unknown error. Status code: ${response.statusCode}';
 
-      if (errors != null) {
-        final userErrors = errors['UserError'] as List<dynamic>?;
-        if (userErrors != null) {
-          for (var error in userErrors) {
-            throw CustomException('$error');
+      try {
+        final decoded = jsonDecode(response.body);
+
+        if (decoded is Map<String, dynamic>) {
+          if (decoded['errors'] != null) {
+            final errors = decoded['errors'];
+            if (errors is Map<String, dynamic>) {
+              final allErrors = errors.values
+                  .expand((e) => e is List ? e : [e])
+                  .join(', ');
+              if (allErrors.isNotEmpty) errorMessage = allErrors;
+            }
           }
-        } else {
-          throw CustomException(
-              'Server side error. Status code: ${response.statusCode}');
+          else if (decoded['message'] != null) {
+            errorMessage = decoded['message'].toString();
+          }
         }
-      } else {
-        throw CustomException(
-            'Unknown error. Status code: ${response.statusCode}');
+        else if (decoded is String) {
+          errorMessage = decoded;
+        }
+      } catch (_) {
+        if (response.body.isNotEmpty) {
+          errorMessage = response.body;
+        }
       }
+
+      throw CustomException(errorMessage);
     }
   }
 }

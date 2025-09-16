@@ -15,8 +15,10 @@ namespace Reservo.Model.Entities
         public int Capacity { get; set; }
         public string? Description { get; set; }
         [ForeignKey(nameof(City))]
-        public int CityID { get; set; }
+        public int CityId { get; set; }
         public City City { get; set; }
-      
+
+        public ICollection<VenueCategory> AllowedCategories { get; set; } = new List<VenueCategory>();
+
     }
 }

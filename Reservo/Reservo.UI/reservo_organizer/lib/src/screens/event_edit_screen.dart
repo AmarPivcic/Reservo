@@ -42,7 +42,6 @@ class _EventEditScreenState extends State<EventEditScreen> {
 
   List<TicketType> _ticketTypes = [];
 
-  bool _isSaving = false;
   bool _isActivating = false;
   bool _isSaved = false;
 
@@ -55,8 +54,8 @@ class _EventEditScreenState extends State<EventEditScreen> {
     final cip = context.read<CityProvider>();
     cip.getCities();
 
-    if (_cityId != null) {
-      await context.read<VenueProvider>().getVenuesByCity(_cityId!);
+    if (_cityId != null && _categoryId != null) {
+      await context.read<VenueProvider>().getVenues(_cityId, _categoryId);
     }
 
     _fetchTickets();
@@ -283,7 +282,6 @@ Future<void> _saveChanges() async {
   );
 
   setState(() {
-    _isSaving = true;
     _isSaved = true;
   });
 
@@ -323,10 +321,6 @@ Future<void> _saveChanges() async {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))
         ],
       ));
-  } finally {
-    setState(() {
-      _isSaving = false;
-    });
   }
 }
 
@@ -335,7 +329,7 @@ Future<void> _cancelEventPopUp() async {
     context: context, 
     builder: (_) => AlertDialog(
       title: const Text("Warning!"),
-      content: const Text("If you cancel this event, you will not be able to activate it again!."),
+      content: const Text("If you cancel this event, you will not be able to activate it again!"),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close")),
         OutlinedButton(onPressed: () {_cancelEvent(); Navigator.pop(context);}, child: const Text("Cancel event"), style: OutlinedButton.styleFrom(
@@ -487,13 +481,17 @@ Future<void> _cancelEvent() async {
                     decoration: const InputDecoration(labelText: "Category"), 
                     value:  categoryProvider.categories.any((c) => c.id == _categoryId) ? _categoryId : null,
                     items: categoryProvider.categories
-                        .map((c) => DropdownMenuItem<int>(value: c.id, child: Text(c.name)))
+                        .map((c) => DropdownMenuItem<int>(
+                          value: c.id, 
+                          child: Text(c.name)))
                         .toList(),
-                    onChanged: (val) { 
+                    onChanged: (val) async { 
                       setState(() {
                         _categoryId = val;
                         _isSaved = false;
+                        _venueId = null;
                       });
+                      await venueProvider.getVenues(_cityId, _categoryId);
                     },
                     validator: (v) => v == null ? "Required" : null,
                   ),
@@ -514,7 +512,7 @@ Future<void> _cancelEvent() async {
                         _venueId = null;
                         _isSaved = false;
                       });
-                      await venueProvider.getVenuesByCity(val!);
+                      await venueProvider.getVenues(_cityId, _categoryId);
                     },
                     validator: (v) => v == null ? "Required" : null
                   ),

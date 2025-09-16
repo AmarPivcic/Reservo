@@ -646,5 +646,6 @@ FodyWeavers.xsd
 # End of https://www.toptal.com/developers/gitignore/api/flutter,aspnetcore,visualstudio,visualstudiocode,android
 
 # Custom ignore
+Reservo.API/Migrations
 *.env
 .env

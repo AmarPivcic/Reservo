@@ -10,12 +10,13 @@ class VenueProvider extends BaseProvider<Venue, Venue> {
   int countOfVenues = 0;
   bool isLoading = false;
 
-  Future<void> getVenuesByCity(int cityId) async {
+  Future<void> getVenues(int? cityId, int? categoryId) async {
     isLoading = true;
     notifyListeners();
 
     final queryParams = {
-      "CityID": cityId.toString()
+      "CityId": cityId.toString(),
+      "CategoryId": categoryId.toString()
     };
     try {
       SearchResult<Venue> searchResult = await get(

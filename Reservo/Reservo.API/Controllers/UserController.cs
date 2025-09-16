@@ -45,11 +45,24 @@ namespace Reservo.API.Controllers
         }
 
         [HttpPut("UpdatePasswordByToken")]
-        public async Task UpdatePasswordByToken(UserUpdatePasswordDTO request)
+        public async Task<ActionResult> UpdatePasswordByToken([FromBody]UserUpdatePasswordDTO request)
         {
-            string? username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            request.Username = username;
-            await (_service as IUserService).UpdatePasswordByToken(request);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+            {
+                request.userId = userId;
+            }
+
+            try
+            {
+                await (_service as IUserService).UpdatePasswordByToken(request);
+                return Ok(new { message = "Password changed successfully." });
+            }
+            catch (UserException ex)
+            {
+
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPut("UpdateUsernameByToken")]
