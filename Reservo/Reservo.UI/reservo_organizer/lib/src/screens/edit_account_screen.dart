@@ -275,18 +275,21 @@ void dispose() {
   @override
     Widget build(BuildContext context) {
     final cityProvider = context.watch<CityProvider>();
+    final userProvider = context.watch<UserProvider>();
     
      return MasterScreen(
       showBackButton: false,
       showMyAccountButton: false,
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Center( // Center widget
-          child: ConstrainedBox( // ConstrainedBox to limit width
+        child: Center( 
+          child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 800),
             child: Form(
               key: _formKey,
-              child: Column(
+              child: userProvider.isLoading
+              ? const Center(child: CircularProgressIndicator()) 
+              : Column(
                 children: [
                   GestureDetector(
                     onTap: _pickImage,
@@ -399,7 +402,7 @@ void dispose() {
                     children: [
                       OutlinedButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text("Cancel"),
+                        child: const Text("Close"),
                       ),
                       ElevatedButton(
                         onPressed: _save,

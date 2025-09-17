@@ -22,15 +22,16 @@ namespace Reservo.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDTO request)
         {
-
-            var token = await _service.Login(request);
-
-            if (token == null)
+            try
             {
-                throw new UserException("Incorrect login!");
+                var token = await _service.Login(request);
+                return Ok(new { token }); ;
             }
+            catch (UserException ex)
+            {
 
-            return Ok(new { token });
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost("logout")]

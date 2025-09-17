@@ -7,7 +7,7 @@ import 'package:reservo_organizer/src/utilities/custom_exception.dart';
 
 abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
   
-  static const String baseUrl = 'https://localhost:7266';
+  static const String baseUrl = 'http://localhost:5113';
   final FlutterSecureStorage storage = const FlutterSecureStorage();
   final String endpoint;
 

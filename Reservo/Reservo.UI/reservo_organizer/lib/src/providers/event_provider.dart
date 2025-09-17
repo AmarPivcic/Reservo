@@ -7,12 +7,11 @@ import 'package:reservo_organizer/src/providers/base_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:reservo_organizer/src/utilities/custom_exception.dart';
 
-class EventProvider extends BaseProvider<Event, Event>
+class EventProvider extends BaseProvider<Event, EventInsertUpdate>
 {
   List<Event> events = [];
   bool isLoading = false;
   int countOfEvents = 0;
-
 
   EventProvider() : super('Event');
 
@@ -147,29 +146,8 @@ class EventProvider extends BaseProvider<Event, Event>
     return await activateEvent(eventId);
   }
 
-  Future<Event> updateEvent(int eventId, EventInsertUpdate dto) async {
-    try {
-      final response = await http.put(
-        Uri.parse('${BaseProvider.baseUrl}/Event/$eventId/Update'),
-        headers: await createHeaders(),
-        body: jsonEncode(dto.toJson())
-      );
-
-      if(response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final updated = Event.fromJson(data);
-        notifyListeners();
-        return updated;
-      }
-      else {
-        handleHttpError(response);
-        throw Exception("Failed to update event");
-      }
-    } on CustomException {
-      rethrow;
-    } catch (e) { 
-      throw CustomException("Can't reach the server. Please check your connection.");
-    }
+  Future<void> updateEvent(int eventId, EventInsertUpdate dto) async {
+    await update(id: eventId, item: dto, toJson:(dto) => dto.toJson());
   }
 
 }

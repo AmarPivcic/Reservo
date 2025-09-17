@@ -41,12 +41,6 @@ namespace Reservo.API.Controllers
             return await (_service as IEventService).Insert(request);
         }
 
-        [HttpPut("{id}/Update")]
-        public async Task<ActionResult<EventGetDTO>> Update(int id, [FromBody] EventUpdateDTO request)
-        {
-            return await (_service as IEventService).Update(id, request);
-        }
-
         [HttpPatch("{id}/Draft")]
         public async Task<ActionResult<EventGetDTO>> Draft(int id)
         {

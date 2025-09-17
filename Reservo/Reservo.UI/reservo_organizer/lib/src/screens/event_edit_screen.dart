@@ -286,20 +286,7 @@ Future<void> _saveChanges() async {
   });
 
   try {
-    final updated = await ep.updateEvent(widget.eventData.id, dto);
-
-    setState(() {
-      widget.eventData.name = updated.name;
-      widget.eventData.description = updated.description;
-      widget.eventData.startDate = updated.startDate;
-      widget.eventData.endDate = updated.endDate;
-      widget.eventData.categoryId = updated.categoryId;
-      widget.eventData.venueId = updated.venueId;
-      widget.eventData.venueName = updated.venueName;
-      widget.eventData.cityName = updated.cityName;
-      widget.eventData.ticketTypes = updated.ticketTypes;
-      widget.eventData.categoryName = updated.categoryName;
-    });
+    await ep.updateEvent(widget.eventData.id, dto);
 
     await showDialog(
       context: context, 
