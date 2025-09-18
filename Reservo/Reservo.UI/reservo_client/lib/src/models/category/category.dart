@@ -6,10 +6,12 @@ part 'category.g.dart';
 class Category {
   int id;
   String name;
+  String? image;
 
   Category(
     this.id,
-    this.name
+    this.name,
+    this.image
   );
 
     factory Category.fromJson(Map<String, dynamic> json) => _$CategoryFromJson(json);

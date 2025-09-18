@@ -126,6 +126,9 @@ namespace Reservo.Services.Services
 
             if (search.OrganizerId.HasValue)
                 query = query.Where(e => e.OrganizerId == search.OrganizerId);
+            
+            if (search.CategoryId.HasValue)
+                query = query.Where(e => e.CategoryId == search.CategoryId);
 
             if (!string.IsNullOrWhiteSpace(search.State))
                 query = query.Where(e => e.State == search.State);
@@ -154,7 +157,10 @@ namespace Reservo.Services.Services
 
         public override IQueryable<Event> AddInclude(IQueryable<Event> query, EventSearchObject? search = null)
         {
-            return query.Include(e => e.Venue).ThenInclude(v => v.City);
+            query = query.Include(e => e.Venue).ThenInclude(v => v.City);
+            query = query.Include(e => e.TicketTypes);
+
+            return query;
         }
     }
 }

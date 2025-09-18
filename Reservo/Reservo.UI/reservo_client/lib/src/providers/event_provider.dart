@@ -10,8 +10,9 @@ class EventProvider extends BaseProvider<Event, Event>
   int countOfEvents = 0;
 
   EventProvider() : super('Event');
-
+  
   Future<void> getEvents({
+    int? categoryId,
     int? pageNumber,
     int? pageSize,
     String? nameFilter,
@@ -25,11 +26,19 @@ class EventProvider extends BaseProvider<Event, Event>
 
     Map<String, dynamic> queryParams = {};
 
-    queryParams['PageNumber'] = pageNumber;
-    queryParams['PageSize'] = pageSize;
+
+    if(pageNumber != null){
+        queryParams['PageNumber'] = pageNumber.toString();;
+    } 
+    if(pageSize != null){
+        queryParams['PageSize'] = pageSize.toString();;
+    }
+    if(categoryId != null){
+        queryParams['CategoryId'] = categoryId.toString();
+    }
     if(nameFilter != null && nameFilter.isNotEmpty){
         queryParams['Name'] = nameFilter;
-        }
+    }
     if(state != null && state.isNotEmpty){
       queryParams['State'] = state;
     }
@@ -47,7 +56,6 @@ class EventProvider extends BaseProvider<Event, Event>
       SearchResult<Event> searchResult = await get(
         filter: queryParams,
         fromJson: (json) => Event.fromJson(json),
-        customEndpoint: 'GetByToken'
       );
     events = searchResult.result;
     countOfEvents = searchResult.count;
