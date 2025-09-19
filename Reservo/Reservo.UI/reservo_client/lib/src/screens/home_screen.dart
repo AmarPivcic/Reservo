@@ -39,7 +39,9 @@ class _HomeScreenState extends State<HomeScreen> {
           color: Colors.grey[900],
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
+            child: categoryProvider.isLoading 
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
@@ -51,52 +53,60 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 20),
                 ...categoryProvider.categories.map((category) {
-                  return InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => EventsScreen(categoryData: category),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[800],
+                  return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    width: double.infinity,
+                    child: Material(
+                      color: Colors.grey[800],
+                      borderRadius: BorderRadius.circular(12),
+                      child: InkWell(
                         borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 40,
-                            height: 40,
-                            child: category.image != null &&
-                                    category.image!.isNotEmpty
-                                ? Image.memory(
-                                    base64Decode(category.image!),
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Image.asset(
-                                    'lib/src/assets/images/LogoLight.png',
-                                    height: 50,
-                                    width: 50,
-                                    fit: BoxFit.cover,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => EventsScreen(categoryData: category),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  SizedBox(
+                                    width: 40,
+                                    height: 40,
+                                    child: category.image != null &&
+                                            category.image!.isNotEmpty
+                                        ? Image.memory(
+                                            base64Decode(category.image!),
+                                            width: 50,
+                                            height: 50,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Image.asset(
+                                            'lib/src/assets/images/LogoLight.png',
+                                            height: 50,
+                                            width: 50,
+                                            fit: BoxFit.cover,
+                                          ),
                                   ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    category.name,
+                                    style: const TextStyle(
+                                        fontSize: 20, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                              const Icon(Icons.arrow_forward_ios,
+                                  size: 16, color: Colors.white)
+                            ],
                           ),
-                          const SizedBox(width: 16),
-                          Text(
-                            category.name,
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   );
@@ -106,6 +116,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       )
-      );
+    );
   }
 }
