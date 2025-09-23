@@ -10,7 +10,6 @@ namespace Reservo.Model.DTOs.Ticket
 {
     public class TicketGetDTO
     {
-        public int Id { get; set; }
         public string QRCode { get; set; }
         public string State { get; set; }
         public int OrderDetailId { get; set; }

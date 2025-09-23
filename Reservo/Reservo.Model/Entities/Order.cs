@@ -17,6 +17,7 @@ namespace Reservo.Model.Entities
         public User User { get; set; }
         public string StripePaymentIntentId { get; set; }
         public bool IsPaid { get; set; }
+        public string State { get; set; } = "active";
         public ICollection<OrderDetail> OrderDetails { get; set; }
     }
 }

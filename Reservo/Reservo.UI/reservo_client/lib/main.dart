@@ -9,11 +9,13 @@ import 'package:reservo_client/src/providers/ticket_type_provider.dart';
 import 'package:reservo_client/src/providers/user_provider.dart';
 import 'package:reservo_client/src/providers/order_provider.dart';
 import 'package:reservo_client/src/services/stripe_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); 
+  await dotenv.load();
   await StripeService.init();
   runApp(
     MultiProvider(

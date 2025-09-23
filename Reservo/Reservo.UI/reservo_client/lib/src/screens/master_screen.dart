@@ -4,6 +4,7 @@ import 'package:reservo_client/src/providers/auth_provider.dart';
 import 'package:reservo_client/src/screens/edit_account_screen.dart';
 import 'package:reservo_client/src/screens/home_screen.dart';
 import 'package:reservo_client/src/screens/login_screen.dart';
+import 'package:reservo_client/src/screens/orders_screen.dart';
 
 class MasterScreen extends StatelessWidget {
   final Widget child;
@@ -115,6 +116,32 @@ class MasterScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => const HomeScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.qr_code_2),
+                    title: const Text('Active orders'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const OrdersScreen(ordersFilter: "active"),
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.history_rounded),
+                    title: const Text('Previous orders'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const OrdersScreen(ordersFilter: "previous"),
                         ),
                       );
                     },

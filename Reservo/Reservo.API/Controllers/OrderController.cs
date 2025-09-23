@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Reservo.Model.DTOs.Order;
+using Reservo.Model.DTOs.OrderDetail;
 using Reservo.Model.Entities;
 using Reservo.Model.SearchObjects;
 using Reservo.Model.Utilities;
@@ -24,6 +25,47 @@ namespace Reservo.API.Controllers
             }
 
             return await (_service as IOrderService).CreateOrder(request);
+        }
+
+        [HttpPost("{orderId}/Confirm")]
+        public async Task<IActionResult> ConfirmOrder(int orderId)
+        {
+            var result = await (_service as IOrderService).ConfirmOrderPayment(orderId);
+            return Ok(new { success = result });
+        }
+
+        [HttpGet("UserOrders")]
+        public async Task<IEnumerable<UserOrderGetDTO>> GetUserOrders()
+        {
+            int UserId;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+            {
+                UserId = userId;
+                return await (_service as IOrderService).GetUserOrders(UserId);
+            }
+
+            throw new UserException("User not found!");
+        }
+
+        [HttpGet("UserPreviousOrders")]
+        public async Task<IEnumerable<UserOrderGetDTO>> GetUserPreviousOrders()
+        {
+            int UserId;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+            {
+                UserId = userId;
+                return await (_service as IOrderService).GetUserPreviousOrders(UserId);
+            }
+
+            throw new UserException("User not found!");
+        }
+
+        [HttpGet("UserOrders/{orderId}")]
+        public async Task<UserOrderDetailGetDTO> GetOrderDetail(int orderId)
+        {
+            return await (_service as IOrderService).GetOrderDetail(orderId);
         }
     }
 }

@@ -3,6 +3,7 @@ import 'package:reservo_client/src/models/order/order_insert.dart';
 import 'package:reservo_client/src/models/order_details/order_details_insert.dart';
 import 'package:reservo_client/src/providers/order_provider.dart';
 import 'package:reservo_client/src/providers/ticket_type_provider.dart';
+import 'package:reservo_client/src/screens/home_screen.dart';
 import 'package:reservo_client/src/screens/master_screen.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
 
@@ -83,11 +84,21 @@ class _ConfirmPaymentScreenState extends State<ConfirmPaymentScreen> {
 
       await stripe.Stripe.instance.presentPaymentSheet();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Payment successful!")),
+      final confirmed = await _orderProvider.confirmOrder(order.id);
+        if (confirmed) {
+          ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Payment successful! Order confirmed.")),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text(
+              "Payment succeeded, but confirming order failed.")),
+          );
+        }
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false
       );
-
-      Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Payment failed: $e")),
