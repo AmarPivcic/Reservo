@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace Reservo.Model.SearchObjects
 {
-    public class TicketTypeSearchObject : BaseSearchObject
+    public class OrderSearchObject : BaseSearchObject
     {
-        public int? id { get; set; }
     }
 }

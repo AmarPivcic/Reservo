@@ -13,7 +13,6 @@ namespace Reservo.Model.DTOs.Order
         public int Id { get; set; }
         public DateTime OrderDate { get; set; }
         public double TotalAmount { get; set; }
-        public string State { get; set; }
-        public string Username { get; set; }
+        public string StripeClientSecret { get; set; }
     }
 }

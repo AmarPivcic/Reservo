@@ -1,4 +1,4 @@
-﻿using Reservo.Model.DTOs.Ticket;
+﻿using Reservo.Model.DTOs.OrderDetail;
 using Reservo.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace Reservo.Model.DTOs.Order
 {
     public class OrderInsertDTO
     {
-        public int UserId { get; set; }
-        public List<TicketOrderDTO> Tickets { get; set; }
+        public int? UserId { get; set; }
+        public List<OrderDetailInsertDTO> OrderDetails { get; set; }
     }
 }

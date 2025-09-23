@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Reservo.Model.DTOs.TicketType;
 using Reservo.Model.Entities;
 using Reservo.Model.SearchObjects;
@@ -26,6 +27,22 @@ namespace Reservo.Services.Services
                 .Where(t => t.EventId == eventId)
                 .Select(t => _mapper.Map<TicketTypeGetDTO>(t))
                 .ToListAsync();
+        }
+
+        public override IQueryable<TicketType> AddFilter(IQueryable<TicketType> query, TicketTypeSearchObject? search = null)
+        {
+            if (search == null)
+                return query;
+
+            if(search.id.HasValue)
+                query = query.Where(t => t.Id == search.id);
+            return base.AddFilter(query, search);
+        }
+
+        public async Task<TicketTypeGetDTO> GetTicketTypeById(int id)
+        {
+            var entity = _context.TicketTypes.Find(id);
+            return _mapper.Map<TicketTypeGetDTO>(entity);
         }
     }
 }

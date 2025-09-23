@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:reservo_client/src/models/search_result.dart';
 import 'package:reservo_client/src/models/ticket_type/ticket_type.dart';
 import 'package:http/http.dart' as http;
 import 'package:reservo_client/src/providers/base_provider.dart';
@@ -12,7 +13,7 @@ class TicketTypeProvider extends BaseProvider<TicketType, TicketType> {
   Future<List<TicketType>> getTicketTypesForEvent(int eventId) async {
     try {
       final response = await http.get(
-        Uri.parse('${BaseProvider.baseUrl}/TicketType/Get/$eventId'),
+        Uri.parse('${BaseProvider.baseUrl}/TicketType/GetByEvent/$eventId'),
         headers: await createHeaders(),
       );
 
@@ -23,13 +24,29 @@ class TicketTypeProvider extends BaseProvider<TicketType, TicketType> {
         return ticketTypes;
       }
       else {
-        print("Failed to fetch tickets: ${response.statusCode}");
         return [];
       }
     } catch (e) {
-      print("Error fetching tickets: $e");
+
       return [];
     }
+  }
 
+   Future<TicketType?> getTicketTypeById(int id) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${BaseProvider.baseUrl}/TicketType/Get/$id'),
+        headers: await createHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return TicketType.fromJson(data);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
   }
 }

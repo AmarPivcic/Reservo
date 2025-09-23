@@ -29,8 +29,12 @@ class EventProvider extends BaseProvider<Event, EventInsertUpdate>
 
     Map<String, dynamic> queryParams = {};
 
-    queryParams['PageNumber'] = pageNumber.toString();;
-    queryParams['PageSize'] = pageSize.toString();;
+    if(pageNumber != null){
+        queryParams['PageNumber'] = pageNumber.toString();;
+    } 
+    if(pageSize != null){
+        queryParams['PageSize'] = pageSize.toString();;
+    }
     if(nameFilter != null && nameFilter.isNotEmpty){
         queryParams['Name'] = nameFilter;
         }

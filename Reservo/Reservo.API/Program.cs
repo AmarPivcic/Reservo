@@ -10,6 +10,7 @@ using Reservo.Services.Interfaces;
 using Reservo.Services.Mapping;
 using Reservo.Services.Services;
 using Reservo.Services.StateMachineServices.EventStateMachine;
+using Stripe;
 using System.Text;
 
 
@@ -18,13 +19,20 @@ Env.Load(@"../.env");
 var builder = WebApplication.CreateBuilder(args);
 
 var jwtSecretFromEnv = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
+var stripeSecretFromEnv = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY");
+if (string.IsNullOrEmpty(stripeSecretFromEnv))
+{
+    throw new Exception("Stripe secret key not found in environment variables.");
+}
 
 builder.Services.AddTransient<IUserService, UserService>();
-builder.Services.AddTransient<IEventService, EventService>();
+builder.Services.AddTransient<IEventService, Reservo.Services.Services.EventService>();
 builder.Services.AddTransient<ICityService, CityService>();
 builder.Services.AddTransient<IVenueService, VenueService>();
 builder.Services.AddTransient<ICategoryService, CategoryService>();
 builder.Services.AddTransient<ITicketTypeService, TicketTypeService>();
+builder.Services.AddTransient<IOrderService, OrderService>();
+
 
 
 builder.Services.AddTransient<BaseEventState>();
@@ -72,6 +80,8 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = false
     };
 });
+
+StripeConfiguration.ApiKey = stripeSecretFromEnv;
 
 builder.Services.AddSwaggerGen(c =>
 {

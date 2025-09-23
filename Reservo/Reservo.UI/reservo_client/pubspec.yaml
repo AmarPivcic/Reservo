@@ -42,6 +42,7 @@ dependencies:
   intl: ^0.18.1
   window_manager: ^0.3.8
   image_picker: ^1.0.7
+  flutter_stripe: 10.2.0
 
 dev_dependencies:
   flutter_test:

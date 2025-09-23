@@ -6,16 +6,23 @@ using Reservo.Services.Interfaces;
 
 namespace Reservo.API.Controllers
 {
+    [ApiController]
     public class TicketTypeController : BaseController<TicketType, TicketTypeGetDTO, TicketTypeInsertDTO, TicketTypeUpdateDTO, TicketTypeSearchObject>
     {
         public TicketTypeController(ITicketTypeService service, ILogger<BaseController<TicketType, TicketTypeGetDTO, TicketTypeInsertDTO, TicketTypeUpdateDTO, TicketTypeSearchObject>> logger) : base(service, logger)
         {
         }
 
-        [HttpGet("Get/{eventId}")]
+        [HttpGet("GetByEvent/{eventId}")]
         public async Task<List<TicketTypeGetDTO>> GetTicketTypesByEvent(int eventId)
         {
             return await (_service as ITicketTypeService).GetTicketTypesByEvent(eventId);
+        }
+
+        [HttpGet("Get/{Id}")]
+        public async Task<TicketTypeGetDTO> GetTicketTypesId(int Id)
+        {
+            return await (_service as ITicketTypeService).GetTicketTypeById(Id);
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Security.Claims;
 
 namespace Reservo.API.Controllers
 {
+    [ApiController]
     public class EventController : BaseController<Event, EventGetDTO, EventInsertDTO, EventUpdateDTO, EventSearchObject>
     {
 
@@ -16,7 +17,6 @@ namespace Reservo.API.Controllers
         {
         }
 
-        [Authorize(Roles ="Organizer")]
         [HttpGet("GetByToken")]
         public async Task<PagedResult<EventGetDTO>> GetByToken([FromQuery] EventSearchObject? search = null)
         {

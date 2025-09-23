@@ -40,6 +40,9 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
         headers: await createHeaders(),
       );
 
+      // ignore: avoid_print
+      print(Uri.parse(url));
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         List<T> results =

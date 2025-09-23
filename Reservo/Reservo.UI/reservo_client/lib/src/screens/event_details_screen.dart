@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:reservo_client/src/models/event/event.dart';
 import 'package:reservo_client/src/models/ticket_type/ticket_type.dart';
 import 'package:reservo_client/src/providers/ticket_type_provider.dart';
+import 'package:reservo_client/src/screens/buy_tickets_screen.dart';
 import 'package:reservo_client/src/screens/master_screen.dart';
 
 class EventDetailsScreen extends StatefulWidget {
@@ -177,6 +178,17 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 ),
               );
             }),
+            ElevatedButton
+            (onPressed: () {
+              Navigator.push(
+                context, 
+                MaterialPageRoute(
+                  builder: (_) => BuyTicketsScreen(ticketTypes: _ticketTypes),
+                ),
+              );
+            },
+             child: Text("Buy tickets")
+            )
           ],
         ),
       ),

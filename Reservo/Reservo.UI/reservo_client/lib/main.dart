@@ -7,8 +7,14 @@ import 'package:reservo_client/src/providers/city_provider.dart';
 import 'package:reservo_client/src/providers/event_provider.dart';
 import 'package:reservo_client/src/providers/ticket_type_provider.dart';
 import 'package:reservo_client/src/providers/user_provider.dart';
+import 'package:reservo_client/src/providers/order_provider.dart';
+import 'package:reservo_client/src/services/stripe_service.dart';
 
-void main() {
+
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized(); 
+  await StripeService.init();
   runApp(
     MultiProvider(
       providers:[
@@ -18,6 +24,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => CityProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => TicketTypeProvider()),
+        ChangeNotifierProvider(create: (_) => OrderProvider()),
       ],
       child:  const MyApp(),
     ),

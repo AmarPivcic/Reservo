@@ -12,5 +12,6 @@ namespace Reservo.Services.Interfaces
     public interface ITicketTypeService : IBaseService<TicketType, TicketTypeGetDTO, TicketTypeInsertDTO, TicketTypeUpdateDTO, TicketTypeSearchObject>
     {
         Task<List<TicketTypeGetDTO>> GetTicketTypesByEvent(int eventId);
+        Task<TicketTypeGetDTO> GetTicketTypeById(int id);
     }
 }
