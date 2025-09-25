@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:reservo_client/src/models/user/user_insert.dart';
 import 'package:reservo_client/src/providers/base_provider.dart';
 import 'package:reservo_client/src/utilities/custom_exception.dart';
 
@@ -62,6 +63,18 @@ class AuthProvider extends BaseProvider<AuthProvider, AuthProvider>
       rethrow;
     } catch (e) { 
       throw CustomException("Can't reach the server. Please check your connection.");
+    }
+  }
+
+  Future<void> register(UserInsert dto) async {
+    final response = await http.post(
+      Uri.parse("${BaseProvider.baseUrl}/User"),
+      headers: await createHeaders(),
+      body: jsonEncode(dto.toJson()),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception("Registration failed: ${response.body}");
     }
   }
 

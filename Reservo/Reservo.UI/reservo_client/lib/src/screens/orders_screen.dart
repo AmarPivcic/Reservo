@@ -129,10 +129,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                       Padding(
                                         padding: const EdgeInsets.only(top: 4.0),
                                         child: Text(
-                                          order.state!,
+                                          order.state!.toUpperCase(),
                                           style: TextStyle(
                                             fontSize: 14,
-                                            color: order.state == "Cancelled" ? Colors.red : Colors.green,
+                                            color: order.state == "cancelled" ? Colors.red : Colors.green,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),

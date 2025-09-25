@@ -11,9 +11,9 @@ OrderTicket _$OrderTicketFromJson(Map<String, dynamic> json) => OrderTicket(
       quantity: (json['quantity'] as num).toInt(),
       unitPrice: (json['unitPrice'] as num).toDouble(),
       totalPrice: (json['totalPrice'] as num).toDouble(),
-      tickets: (json['tickets'] as List)
-            .map((e) => Ticket.fromJson(e))
-            .toList(),
+      tickets: (json['tickets'] as List<dynamic>)
+          .map((e) => Ticket.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$OrderTicketToJson(OrderTicket instance) =>
@@ -22,5 +22,5 @@ Map<String, dynamic> _$OrderTicketToJson(OrderTicket instance) =>
       'quantity': instance.quantity,
       'unitPrice': instance.unitPrice,
       'totalPrice': instance.totalPrice,
-      'tickets': instance.tickets.map((e) => e.toJson()).toList()
+      'tickets': instance.tickets.map((e) => e.toJson()).toList(),
     };

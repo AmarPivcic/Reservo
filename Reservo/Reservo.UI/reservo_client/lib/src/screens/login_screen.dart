@@ -4,6 +4,7 @@ import 'package:reservo_client/constants.dart';
 import 'package:reservo_client/src/providers/auth_provider.dart';
 import 'package:reservo_client/src/screens/home_screen.dart';
 import 'package:reservo_client/src/screens/master_screen.dart';
+import 'package:reservo_client/src/screens/register_screen.dart';
 
 class LoginScreen extends StatefulWidget{
   const LoginScreen({super.key});
@@ -127,6 +128,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             minimumSize: const Size.fromHeight(48),
                           ),
                         ),
+                  const SizedBox(height: 4),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                      );
+                    },
+                    child: const Text("Don't have an account? Register here"),
+                  ),
                 ],
               ),
             ),

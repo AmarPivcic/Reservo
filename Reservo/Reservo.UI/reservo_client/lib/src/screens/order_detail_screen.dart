@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:reservo_client/src/models/order_details/order_details.dart';
+import 'package:reservo_client/src/screens/home_screen.dart';
 import 'package:reservo_client/src/screens/master_screen.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../providers/order_provider.dart';
 import 'package:provider/provider.dart';
+
 
 class OrderDetailScreen extends StatefulWidget {
   final int orderId;
@@ -24,6 +26,46 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         Provider.of<OrderProvider>(context, listen: false).getOrderDetail(widget.orderId);
   }
 
+  Future<void> _showCancelDialog() async {
+    final orderProvider = context.read<OrderProvider>();
+    showDialog(
+      context: context, 
+      builder: (_) => AlertDialog(
+        title: const Text("Cancel order"),
+        content: const Text("Are you sure you want to cancel this order? You will be refunded shortly after."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Close"),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                final confirmed = await orderProvider.cancelOrder(widget.orderId);
+
+                if (confirmed) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Order cancelled successfully."))
+                  );
+                } 
+
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+                  (route) => false
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Order cancellation failed: $e"))
+                );
+              }
+            },
+            child: const Text("Cancel order"),
+          )
+        ],
+      )
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
@@ -41,6 +83,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           final order = snapshot.data!;
           final isActive = order.state.toLowerCase() == "active";
           final showTickets = isActive;
+          final state = order.state.toLowerCase();
 
           return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -96,10 +139,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             const SizedBox(height: 4),
                             if (!isActive)
                               Text(
-                                "Order State: ${order.state}",
+                                order.state.toUpperCase(),
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: order.state == "Cancelled"
+                                  color: order.state == "cancelled"
                                       ? Colors.red
                                       : Colors.green,
                                 ),
@@ -167,10 +210,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                             ),
                                             const SizedBox(height: 6),
                                             Text(
-                                              t.state,
+                                              t.state.toUpperCase(),
                                               style: TextStyle(
                                                 fontSize: 15,
-                                                color: t.state == "Active" ? Colors.green : Colors.red,
+                                                color: t.state == "active" ? Colors.green : Colors.red,
                                                 fontWeight: FontWeight.w500,
                                               ),
                                             ),
@@ -189,20 +232,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ),
                 const SizedBox(height: 16),
 
-                Center(
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    color: Colors.grey[900],
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Text(
-                        "Total Paid: ${order.totalAmount.toStringAsFixed(2)} €",
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ),
+                if(state == "active")
+                  Center(
+                  child: ElevatedButton(
+                    child: const Text("Cancel order"),
+                    onPressed: () {
+                      _showCancelDialog();
+                    },
                   ),
                 )
               ],
@@ -213,3 +249,4 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 }
+

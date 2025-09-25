@@ -168,10 +168,22 @@ class _BuyTicketsScreenState extends State<BuyTicketsScreen> {
                             "quantity": selectedQuantities[t.id],
                           })
                       .toList();
+
+                  if (selectedTickets.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Please select at least one ticket to continue."),
+                        backgroundColor: Colors.red,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                    return;
+                  }
+
                   Navigator.push(
-                    context, 
+                    context,
                     MaterialPageRoute(
-                    builder: (_) => ConfirmPaymentScreen(selectedTickets: selectedTickets),
+                      builder: (_) => ConfirmPaymentScreen(selectedTickets: selectedTickets),
                     ),
                   );
                 },

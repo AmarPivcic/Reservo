@@ -21,5 +21,6 @@ namespace Reservo.Model.DTOs.User
         public string? Image { get; set; }
         public string City { get; set; }
         public int? RoleId { get; set; }
+        public bool? Active { get; set; } = false;
     }
 }

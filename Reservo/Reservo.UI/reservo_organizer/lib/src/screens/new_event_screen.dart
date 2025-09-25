@@ -379,17 +379,29 @@ Future<void> _pickStartDate() async {
                                 initialValue: ticket.price.toString(),
                                 decoration: const InputDecoration(labelText: "Price"),
                                 keyboardType: TextInputType.number,
-                                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                                validator: (v) {
+                                  if (v == null || v.isEmpty) return "Required";
+                                  final value = double.tryParse(v);
+                                  if (value == null || value <= 0) return "Price must be greater than 0";
+                                  return null;
+                                },
                                 onChanged: (value) => ticket.price = double.tryParse(value) ?? 0,
                               ),
+
                               TextFormField(
                                 key: ValueKey("qty_${ticket.hashCode}"),
                                 initialValue: ticket.quantity.toString(),
                                 decoration: const InputDecoration(labelText: "Quantity"),
                                 keyboardType: TextInputType.number,
-                                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                                validator: (v) {
+                                  if (v == null || v.isEmpty) return "Required";
+                                  final value = int.tryParse(v);
+                                  if (value == null || value <= 0) return "Quantity must be greater than 0";
+                                  return null;
+                                },
                                 onChanged: (value) => ticket.quantity = int.tryParse(value) ?? 0,
                               ),
+
                               if(index > 0)
                                 TextButton.icon(
                                   onPressed: () => _removeTicketType(index), 

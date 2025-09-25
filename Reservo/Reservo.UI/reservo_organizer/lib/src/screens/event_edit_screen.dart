@@ -387,14 +387,15 @@ Future<void> _cancelEvent() async {
                       Text("Edit event", style: Theme.of(context).textTheme.headlineMedium),
                       Row(
                         children: [
-                          OutlinedButton(
-                            onPressed: _cancelEventPopUp,
-                            child: const Text("Cancel event"),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red,
-                              side: const BorderSide(color: Colors.red),
+                          if(widget.previousState.toLowerCase() == "active")
+                            OutlinedButton(
+                              onPressed: _cancelEventPopUp,
+                              child: const Text("Cancel event"),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.red,
+                                side: const BorderSide(color: Colors.red),
+                              ),
                             ),
-                          ),
                           const SizedBox(width: 8),
                           Tooltip(
                             message: "Closes the screen. If changes are saved, event stays as draft. If event is not saved, changes are discarded.", 
@@ -409,10 +410,11 @@ Future<void> _cancelEvent() async {
                             child: const Text("Save")
                           ),
                           const SizedBox(width: 8),
-                          ElevatedButton(
-                          onPressed: widget.eventData.state == "active" || _isActivating ? null : _activateEvent,
-                          child: _isActivating ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text("Activate"),
-                          ),
+                          if(widget.eventData.state.toLowerCase() == "draft")
+                            ElevatedButton(
+                            onPressed: widget.eventData.state == "active" || _isActivating ? null : _activateEvent,
+                            child: _isActivating ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text("Activate"),
+                            ),
                         ],
                       )
                     ],

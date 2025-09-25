@@ -32,5 +32,5 @@ Map<String, dynamic> _$OrderDetailsToJson(OrderDetails instance) =>
       'venue': instance.venue,
       'eventDate': instance.eventDate.toIso8601String(),
       'city': instance.city,
-      'tickets': instance.tickets.map((e) => e.toJson()).toList()
+      'tickets': instance.tickets.map((e) => e.toJson()).toList(),
     };

@@ -33,7 +33,7 @@ namespace Reservo.Services.Services
             foreach (var detailReq in request.OrderDetails)
             {
                 var ticketType = await _context.TicketTypes.FindAsync(detailReq.TicketTypeId);
-                
+
                 if (ticketType == null)
                     throw new UserException($"TicketType {detailReq.TicketTypeId} not found");
 
@@ -106,7 +106,7 @@ namespace Reservo.Services.Services
                     var ticket = new Ticket
                     {
                         QRCode = Guid.NewGuid().ToString(),
-                        State = "Active",
+                        State = "active",
                         OrderDetailId = detail.Id
                     };
                     _context.Tickets.Add(ticket);
@@ -157,6 +157,46 @@ namespace Reservo.Services.Services
             if (order == null) return null;
 
             return _mapper.Map<UserOrderDetailGetDTO>(order);
+        }
+
+        public async Task CancelOrder(int orderId)
+        {
+            var order = await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Tickets)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.TicketType)
+                    .ThenInclude(tt => tt.Event)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null) throw new UserException("Order not found");
+            if (order.State == "cancelled") throw new UserException("Order already cancelled");
+
+            var eventDate = order.OrderDetails.First().TicketType.Event.StartDate;
+            if (eventDate <= DateTime.Now.AddDays(3))
+                throw new UserException("Orders can only be cancelled at least 3 days before the event");
+
+            var refundService = new RefundService();
+            var refundOptions = new RefundCreateOptions
+            {
+                PaymentIntent = order.StripePaymentIntentId,
+            };
+            await refundService.CreateAsync(refundOptions);
+
+            order.State = "cancelled";
+            order.IsPaid = false;
+
+            foreach (var detail in order.OrderDetails)
+            {
+                var ticketType = detail.TicketType;
+                ticketType.Quantity += detail.Quantity;
+
+                foreach (var ticket in detail.Tickets)
+                    ticket.State = "cancelled";
+            }
+
+            await _context.SaveChangesAsync();
+
         }
 
     }

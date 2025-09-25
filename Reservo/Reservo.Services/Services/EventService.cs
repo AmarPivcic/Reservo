@@ -110,8 +110,23 @@ namespace Reservo.Services.Services
                 .Where(e => e.State == "active" && e.EndDate < now)
                 .ToList();
 
+            if (!expiredEvents.Any())
+                return;
+
             foreach (var e in expiredEvents)
                 e.State = "completed";
+
+            var expiredEventIds = expiredEvents.Select(e => e.Id).ToList();
+
+            var ordersToComplete = _context.Orders
+               .Include(o => o.OrderDetails)
+                   .ThenInclude(od => od.TicketType)
+               .Where(o => o.State == "active" &&
+                           o.OrderDetails.Any(od => expiredEventIds.Contains(od.TicketType.EventId)))
+               .ToList();
+
+            foreach (var order in ordersToComplete)
+                order.State = "completed";
 
             if (expiredEvents.Count > 0)
                 await _context.SaveChangesAsync();

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.HttpOverrides;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Reservo.Model.DTOs.User;
 using Reservo.Model.Entities;
@@ -17,20 +18,24 @@ namespace Reservo.API.Controllers
         {
         }
 
+        [AllowAnonymous]
         [HttpPost()]
         public async override Task<UserGetDTO> Insert(UserInsertDTO request)
         {
             request.RoleId = 2;
+            request.Active = true;
             return await (_service as IUserService).Insert(request);
         }
 
+        [AllowAnonymous]
         [HttpPost("InsertAdmin")]
         public async Task<UserGetDTO> InsertAdmin(UserInsertDTO request)
         {
             request.RoleId = 1;
             return await (_service as IUserService).Insert(request); 
         }
-
+        
+        [AllowAnonymous]
         [HttpPost("InsertOrganizer")]
         public async Task<UserGetDTO> InsertOrganizer(UserInsertDTO request)
         {

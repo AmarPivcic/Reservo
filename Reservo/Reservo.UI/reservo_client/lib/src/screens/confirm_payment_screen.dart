@@ -99,9 +99,20 @@ class _ConfirmPaymentScreenState extends State<ConfirmPaymentScreen> {
         MaterialPageRoute(builder: (_) => const HomeScreen()),
         (route) => false
       );
+    } on stripe.StripeException catch (e) {
+      final code = e.error.code.toString().toLowerCase();
+      final message = e.error.localizedMessage?.toLowerCase() ?? '';
+
+      if (code == 'canceled' || message.contains('canceled')) {
+        return;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Payment failed: ${e.error.localizedMessage}")),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Payment failed: $e")),
+        SnackBar(content: Text("Unexpected error: $e")),
       );
     }
   }

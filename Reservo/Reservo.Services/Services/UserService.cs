@@ -249,7 +249,7 @@ namespace Reservo.Services.Services
                     var citySet = _context.Set<City>();
                     City newCity = new City
                     {
-                        Name = request.Name
+                        Name = request.City
                     };
                     await citySet.AddAsync(newCity);
                     await _context.SaveChangesAsync();
@@ -257,8 +257,6 @@ namespace Reservo.Services.Services
                     entity.CityId = newCity.Id;
                 }
                 
-                
-
                 await base.BeforeInsert(entity, request);
             }
             else

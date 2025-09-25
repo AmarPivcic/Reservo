@@ -62,13 +62,22 @@ class OrderProvider extends BaseProvider<Order, OrderInsert>
       Uri.parse('${BaseProvider.baseUrl}/Order/UserOrders/$orderId'),
       headers: await createHeaders(),
     );
-    print(response.body);
+
     if(response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
-      return OrderDetails.fromJson(data);;
+      return OrderDetails.fromJson(data);
     } else {
       throw Exception("Failed to load order data");
     }
+  }
+
+  Future<bool> cancelOrder(int orderId) async{
+    final response = await http.put(
+      Uri.parse('${BaseProvider.baseUrl}/Order/$orderId/Cancel'),
+      headers: await createHeaders(),
+    );
+
+    return response.statusCode == 200;
   }
 
 

@@ -67,5 +67,19 @@ namespace Reservo.API.Controllers
         {
             return await (_service as IOrderService).GetOrderDetail(orderId);
         }
+
+        [HttpPut("{orderId}/Cancel")]
+        public async Task<ActionResult> CancelOrder(int orderId)
+        {
+            try
+            {
+                await (_service as IOrderService).CancelOrder(orderId);
+                return Ok(new { message = "Event cancelled successfully." });
+            }
+            catch (UserException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }
