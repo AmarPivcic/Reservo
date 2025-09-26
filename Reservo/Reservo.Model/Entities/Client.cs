@@ -8,5 +8,7 @@ namespace Reservo.Model.Entities
 {
     public class Client : User
     {
+        public ICollection<Order> Orders { get; set; }
+
     }
 }

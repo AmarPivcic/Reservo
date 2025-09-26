@@ -32,6 +32,7 @@ builder.Services.AddTransient<IVenueService, VenueService>();
 builder.Services.AddTransient<ICategoryService, CategoryService>();
 builder.Services.AddTransient<ITicketTypeService, TicketTypeService>();
 builder.Services.AddTransient<IOrderService, OrderService>();
+builder.Services.AddTransient<IStripeService, StripeService>();
 
 
 

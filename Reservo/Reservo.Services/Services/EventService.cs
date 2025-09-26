@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Reservo.Model.DTOs.Event;
 using Reservo.Model.Entities;
 using Reservo.Model.SearchObjects;
@@ -95,6 +96,22 @@ namespace Reservo.Services.Services
             }
         }
 
+        public async Task<EventGetDTO> Complete(int id)
+        {
+            var entity = await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
+
+            if (entity != null)
+            {
+                var state = _baseEventState.CreateState(entity.State);
+
+                return await state.Complete(id);
+            }
+            else
+            {
+                throw new UserException($"Entity ({id}) doesn't exists!");
+            }
+        }
+
         public async Task<List<string>> AllowedActions(int id)
         {
             var entity = await _context.Events.FindAsync(id);
@@ -132,6 +149,22 @@ namespace Reservo.Services.Services
                 await _context.SaveChangesAsync();
 
             return;
+        }
+
+        public override async Task<string> Delete(int id)
+        {
+            var entity = await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
+
+            if (entity != null)
+            {
+                var state = _baseEventState.CreateState(entity.State);
+
+                return await state.Delete(id);
+            }
+            else
+            {
+                throw new UserException($"Entity ({id}) doesn't exists!");
+            }
         }
 
         public override IQueryable<Event> AddFilter(IQueryable<Event> query, EventSearchObject? search = null)

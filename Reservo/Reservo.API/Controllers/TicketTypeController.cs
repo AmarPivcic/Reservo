@@ -20,7 +20,7 @@ namespace Reservo.API.Controllers
         }
 
         [HttpGet("Get/{Id}")]
-        public async Task<TicketTypeGetDTO> GetTicketTypesId(int Id)
+        public async Task<TicketTypeGetDTO> GetTicketTypeById(int Id)
         {
             return await (_service as ITicketTypeService).GetTicketTypeById(Id);
         }

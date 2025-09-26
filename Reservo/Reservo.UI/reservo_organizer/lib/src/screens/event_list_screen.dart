@@ -81,17 +81,17 @@ void _clearFilters() {
       actions: [
         TextButton.icon(
           onPressed: () {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const HomeScreen()),
             );
           },
           icon: const Icon(Icons.event, color: Colors.white),
-          label: const Text("Events", style: TextStyle(color: Colors.white)),
+          label: const Text("Active Events", style: TextStyle(color: Colors.white)),
         ),
         TextButton.icon(
           onPressed: () {
-            Navigator.pushReplacement(
+            Navigator.push(
               context, 
               MaterialPageRoute(builder: (context) => const PreviousEventsScreen()),
             );
@@ -101,7 +101,7 @@ void _clearFilters() {
         ),
         TextButton.icon(
           onPressed: () {
-            Navigator.pushReplacement(
+            Navigator.push(
               context, 
               MaterialPageRoute(builder: (context) => const CancelledEventsScreen()),
             );
@@ -111,7 +111,7 @@ void _clearFilters() {
         ),
         TextButton.icon(
           onPressed: () {
-            Navigator.pushReplacement(
+            Navigator.push(
               context, 
               MaterialPageRoute(builder: (context) => const DraftEventsScreen()),
             );
@@ -371,8 +371,8 @@ class _EventCard extends StatelessWidget{
             )
           );
 
-          if(result == true){
-            await context.read<EventProvider>().getEvents();
+          if(result != null){
+            await context.read<EventProvider>().getEvents(state: result);
           }
         },
         child: Column(

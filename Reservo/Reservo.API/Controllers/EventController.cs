@@ -44,19 +44,61 @@ namespace Reservo.API.Controllers
         [HttpPatch("{id}/Draft")]
         public async Task<ActionResult<EventGetDTO>> Draft(int id)
         {
-            return await (_service as IEventService).Draft(id);
+            try
+            {
+                var updated = await (_service as IEventService).Draft(id);
+                return Ok(updated);
+            }
+            catch (UserException ex)
+            {
+
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPatch("{id}/Activate")]
         public async Task<ActionResult<EventGetDTO>> Activate(int id)
         {
-            return await (_service as IEventService).Activate(id);
+            try
+            {
+                var updated = await (_service as IEventService).Activate(id);
+                return Ok(updated);
+            }
+            catch (UserException ex)
+            {
+
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPatch("{id}/Cancel")]
         public async Task<ActionResult<EventGetDTO>> Cancel(int id)
         {
-            return await (_service as IEventService).Cancel(id);
+            try
+            {
+                var updated = await (_service as IEventService).Cancel(id);
+                return Ok(updated);
+            }
+            catch (UserException ex)
+            {
+
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPatch("{id}/Complete")]
+        public async Task<ActionResult<EventGetDTO>> Complete(int id)
+        {
+            try
+            {
+                var updated = await (_service as IEventService).Complete(id);
+                return Ok(updated);
+            }
+            catch (UserException ex)
+            {
+
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpGet("{id}/AllowedActions")]

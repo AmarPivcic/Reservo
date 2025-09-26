@@ -14,8 +14,10 @@ namespace Reservo.Services.Services
 {
     public class OrderService : BaseService<Order, OrderGetDTO, OrderInsertDTO, OrderUpdateDTO, OrderSearchObject>, IOrderService
     {
-        public OrderService(ReservoContext context, IMapper mapper) : base(context, mapper)
+        private readonly IStripeService _stripeService;
+        public OrderService(ReservoContext context, IMapper mapper, IStripeService stripeService) : base(context, mapper)
         {
+            _stripeService = stripeService;
         }
 
         public async Task<OrderGetDTO> CreateOrder(OrderInsertDTO request)
@@ -57,20 +59,9 @@ namespace Reservo.Services.Services
 
             order.TotalAmount = totalAmount;
 
-            var options = new PaymentIntentCreateOptions
-            {
-                Amount = (long)(totalAmount * 100),
-                Currency = "eur",
-                AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
-                {
-                    Enabled = true
-                }
-            };
+            var paymentIntent = await _stripeService.CreatePaymentIntent(totalAmount);
 
-            var service = new PaymentIntentService();
-            var paymentIntent = await service.CreateAsync(options);
-
-            order.StripePaymentIntentId = paymentIntent.Id;
+            order.StripePaymentIntentId = paymentIntent.paymentIntentId;
 
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
@@ -79,7 +70,7 @@ namespace Reservo.Services.Services
             {
                 Id = order.Id,
                 TotalAmount = order.TotalAmount,
-                StripeClientSecret = paymentIntent.ClientSecret
+                StripeClientSecret = paymentIntent.clientSecret
             };
         }
 
@@ -154,7 +145,8 @@ namespace Reservo.Services.Services
                     .ThenInclude(v => v.City)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
-            if (order == null) return null;
+            if (order == null)
+                throw new UserException("Order not found!");
 
             return _mapper.Map<UserOrderDetailGetDTO>(order);
         }
@@ -176,12 +168,7 @@ namespace Reservo.Services.Services
             if (eventDate <= DateTime.Now.AddDays(3))
                 throw new UserException("Orders can only be cancelled at least 3 days before the event");
 
-            var refundService = new RefundService();
-            var refundOptions = new RefundCreateOptions
-            {
-                PaymentIntent = order.StripePaymentIntentId,
-            };
-            await refundService.CreateAsync(refundOptions);
+            await _stripeService.CreateRefundAsync(order.StripePaymentIntentId);
 
             order.State = "cancelled";
             order.IsPaid = false;

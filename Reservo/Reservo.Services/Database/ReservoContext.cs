@@ -41,7 +41,7 @@ namespace Reservo.Services.Database
                 .WithMany()
                 .HasForeignKey(e => e.VenueId)
                 .OnDelete(DeleteBehavior.Restrict);
-           
+
             modelBuilder.Entity<Event>()
                 .HasOne(e => e.Category)
                 .WithMany()
@@ -66,6 +66,42 @@ namespace Reservo.Services.Database
                 .HasOne(vc => vc.Category)
                 .WithMany(c => c.Venues)
                 .HasForeignKey(vc => vc.CategoryId);
+
+            modelBuilder.Entity<TicketType>()
+                .HasOne(tt => tt.Event)
+                .WithMany(e => e.TicketTypes)
+                .HasForeignKey(tt => tt.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OrderDetail>()
+                .HasOne(od => od.TicketType)
+                .WithMany(tt => tt.OrderDetails)
+                .HasForeignKey(od => od.TicketTypeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.OrderDetails)
+                .WithOne(od => od.Order)
+                .HasForeignKey(od => od.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Ticket>()
+                .HasOne(t => t.OrderDetail)
+                .WithMany(od => od.Tickets)
+                .HasForeignKey(t => t.OrderDetailId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.User as Client)
+                .WithMany(u => u.Orders)
+                .HasForeignKey(o => o.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Event>()
+                .HasOne(e => e.User as Organizer)
+                .WithMany(u => u.OrganizedEvents)
+                .HasForeignKey(e => e.OrganizerId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

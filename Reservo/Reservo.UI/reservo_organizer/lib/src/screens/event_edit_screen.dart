@@ -18,7 +18,7 @@ import 'package:intl/intl.dart';
 
 class EventEditScreen extends StatefulWidget {
   final Event eventData;
-   final String previousState;
+  final String previousState;
   const EventEditScreen({super.key, required this.eventData, required this.previousState});
 
   @override
@@ -44,35 +44,41 @@ class _EventEditScreenState extends State<EventEditScreen> {
 
   bool _isActivating = false;
   bool _isSaved = false;
+  late bool isEditable;
 
   @override
   void initState() {
     super.initState();
+
+    isEditable = widget.previousState.toLowerCase() == "active" ||
+                  widget.previousState.toLowerCase() == "draft";
+
+    _eventName = widget.eventData.name;
+    _eventDescription = widget.eventData.description;
+    _eventStartDate = widget.eventData.startDate;
+    _eventEndDate = widget.eventData.endDate;
+    _categoryId = widget.eventData.categoryId;
+    _venueId = widget.eventData.venueId;
+    _eventImage = widget.eventData.image;
+    _cityId = widget.eventData.cityId;
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-    final cap = context.read<CategoryProvider>();
-    cap.getCategories();
-    final cip = context.read<CityProvider>();
-    cip.getCities();
+      final cap = context.read<CategoryProvider>();
+      cap.getCategories();
+      final cip = context.read<CityProvider>();
+      cip.getCities();
 
-    if (_cityId != null && _categoryId != null) {
-      await context.read<VenueProvider>().getVenues(_cityId, _categoryId);
-    }
+      if (_cityId != null && _categoryId != null) {
+        await context.read<VenueProvider>().getVenues(_cityId, _categoryId);
+      }
 
-    _fetchTickets();
-  });
+      _fetchTickets();
+    });
 
-  _eventName = widget.eventData.name;
-  _eventDescription = widget.eventData.description;
-  _eventStartDate = widget.eventData.startDate;
-  _eventEndDate = widget.eventData.endDate;
-  _categoryId = widget.eventData.categoryId;
-  _venueId = widget.eventData.venueId;
-  _eventImage = widget.eventData.image;
-  _cityId = widget.eventData.cityId;
-
-  if (widget.eventData.state.toLowerCase() != "draft") {
+  if (widget.previousState.toLowerCase() != "draft") {
      _markDraft();
   }
+
 }
 
 Future<void> _fetchTickets() async {
@@ -97,32 +103,68 @@ Future<void> _revertStateAndClose() async {
     final ep = context.read<EventProvider>();
     if (widget.previousState.toLowerCase() == 'active') {
       await ep.setEventActive(widget.eventData.id);
-    } else {
+    } else if (widget.previousState.toLowerCase() == 'draft') {
       await ep.setEventDraft(widget.eventData.id);
+    } else if (widget.previousState.toLowerCase() == 'completed') {
+      await ep.setEventComplete(widget.eventData.id);
+    } else if (widget.previousState.toLowerCase() == 'cancelled') {
+      await ep.cancelEvent(widget.eventData.id);
     }
   } catch (e) {
     throw Exception("Failed to revert state: $e");
   } finally {
-    Navigator.pop(context, false);
+    Navigator.pop(context, widget.previousState);
   }
 }
 
 Future<void> _pickStartDate() async {
-    final pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
-    );
-    if (pickedDate == null) return;
+  final now = DateTime.now();
 
-    final pickedTime = await showTimePicker(
-      context: context,
-      initialTime: const TimeOfDay(hour: 18, minute: 0),
-    );
-    if (pickedTime == null) return;
+  final pickedDate = await showDatePicker(
+    context: context,
+    initialDate: now,
+    firstDate: now,
+    lastDate: DateTime(2100),
+  );
+  if (pickedDate == null) return;
 
-    final fullDate = DateTime(
+  TimeOfDay initialTime = const TimeOfDay(hour: 18, minute: 0);
+
+  if (pickedDate.year == now.year &&
+      pickedDate.month == now.month &&
+      pickedDate.day == now.day) {
+    final minHour = (now.hour + 2).clamp(0, 23);
+    initialTime = TimeOfDay(hour: minHour, minute: now.minute);
+  }
+
+  final pickedTime = await showTimePicker(
+    context: context,
+    initialTime: initialTime,
+  );
+
+  if (pickedTime == null) return;
+
+  if (pickedDate.year == now.year &&
+      pickedDate.month == now.month &&
+      pickedDate.day == now.day) {
+    final minTime = now.add(const Duration(hours: 2));
+    final pickedDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+    if (pickedDateTime.isBefore(minTime)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Selected time must be at least 2 hours from now")),
+      );
+      return;
+    }
+  }
+
+  setState(() {
+    _eventStartDate = DateTime(
       pickedDate.year,
       pickedDate.month,
       pickedDate.day,
@@ -130,14 +172,12 @@ Future<void> _pickStartDate() async {
       pickedTime.minute,
     );
 
-    setState(() {
-      _eventStartDate = fullDate;
-      if (_eventEndDate != null && _eventEndDate!.isBefore(fullDate)) {
-        _eventEndDate = null;
-        _isSaved = false;
-      }
-    });
-  }
+    if (_eventEndDate != null && _eventEndDate!.isBefore(_eventStartDate!)) {
+      _eventEndDate = null;
+      _isSaved = false;
+    }
+  });
+}
 
   Future<void> _pickEndDate() async {
     if (_eventStartDate == null) return;
@@ -220,7 +260,7 @@ Future<void> _activateEvent() async{
   });
 
   try {
-    final updated = await ep.activateEvent(widget.eventData.id);
+    final updated = await ep.setEventActive(widget.eventData.id);
 
     setState(() {
       widget.eventData.state = updated.state;
@@ -311,6 +351,58 @@ Future<void> _saveChanges() async {
   }
 }
 
+Future<void> _deleteEventPopUp() async {
+  showDialog(
+    context: context, 
+    builder: (_) => AlertDialog(
+      title: const Text("Warning!"),
+      content: const Text("If you delete this event, you will not be able to recover it! All users that bought tickets will be refunded!"),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close")),
+        OutlinedButton(onPressed: () {_deleteEvent(); Navigator.pop(context);}, child: const Text("Delete event"), style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              side: const BorderSide(color: Colors.red),
+                            ),),  
+      ],
+    )
+  );
+}
+
+Future<void> _deleteEvent() async {
+  final ep = context.read<EventProvider>();
+  try {
+    await ep.deleteEvent(widget.eventData.id);
+    await showDialog(
+      context: context, 
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("Deleted"),
+        content: const Text("Event deleted successfully."),
+        actions: [
+         TextButton(onPressed: () {
+            Navigator.pop(dialogContext);
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
+              (route) => false
+            );
+            }, child: const Text("OK"))
+        ],
+      )
+    );
+  } catch (e) {
+    await showDialog(
+      context: context, 
+      builder: (_) => AlertDialog(
+        title: const Text("Error"),
+        content: Text("Failed to delete the event: $e"),
+        actions: [
+          TextButton(onPressed: () {
+            Navigator.pop(context);
+            }, child: const Text("OK"))
+        ],
+      ));
+  } 
+}
+
 Future<void> _cancelEventPopUp() async {
   showDialog(
     context: context, 
@@ -390,27 +482,40 @@ Future<void> _cancelEvent() async {
                           if(widget.previousState.toLowerCase() == "active")
                             OutlinedButton(
                               onPressed: _cancelEventPopUp,
-                              child: const Text("Cancel event"),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: Colors.red,
                                 side: const BorderSide(color: Colors.red),
                               ),
+                              child: const Text("Cancel event"),
+                            ),
+                          const SizedBox(width: 8),
+                          if(isEditable)
+                            OutlinedButton(
+                              onPressed: _deleteEventPopUp,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.red,
+                                side: const BorderSide(color: Colors.red),
+                              ),
+                              child: const Text("Delete event"),
                             ),
                           const SizedBox(width: 8),
                           Tooltip(
-                            message: "Closes the screen. If changes are saved, event stays as draft. If event is not saved, changes are discarded.", 
+                            message: isEditable
+                            ? "Closes the screen. If changes are saved, event stays as draft. If event is not saved, changes are discarded."
+                            : "" ,
                             child: OutlinedButton(
                               onPressed: _revertStateAndClose,
                               child: const Text("Close"),
                             ),
                           ),
                           const SizedBox(width: 8),
+                          if(isEditable)
                           ElevatedButton(
                             onPressed: _isSaved ? null : _saveChanges, 
                             child: const Text("Save")
                           ),
                           const SizedBox(width: 8),
-                          if(widget.eventData.state.toLowerCase() == "draft")
+                          if(isEditable)
                             ElevatedButton(
                             onPressed: widget.eventData.state == "active" || _isActivating ? null : _activateEvent,
                             child: _isActivating ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text("Activate"),
@@ -423,7 +528,7 @@ Future<void> _cancelEvent() async {
                   const SizedBox(height: 16),
 
                   GestureDetector(
-                    onTap: _pickImage,
+                    onTap: isEditable ? _pickImage : null,
                     child: _pickedImageFile != null
                     ? Image.file(
                           _pickedImageFile!,
@@ -449,6 +554,7 @@ Future<void> _cancelEvent() async {
                   const SizedBox(height: 12),
 
                   TextFormField(
+                    enabled: isEditable,
                     initialValue: _eventName,
                     decoration: const InputDecoration(labelText: "Event name"),
                     validator: (v) => v == null || v.isEmpty ? "Required" : null,
@@ -458,6 +564,7 @@ Future<void> _cancelEvent() async {
 
                   const SizedBox(height: 8),
                     TextFormField(
+                    enabled: isEditable,
                     initialValue: _eventDescription,
                     decoration: const InputDecoration(labelText: "Description"),
                     onSaved: (v) => _eventDescription = v,
@@ -474,14 +581,16 @@ Future<void> _cancelEvent() async {
                           value: c.id, 
                           child: Text(c.name)))
                         .toList(),
-                    onChanged: (val) async { 
-                      setState(() {
-                        _categoryId = val;
-                        _isSaved = false;
-                        _venueId = null;
-                      });
-                      await venueProvider.getVenues(_cityId, _categoryId);
-                    },
+                    onChanged: isEditable 
+                      ? (val) async { 
+                        setState(() {
+                          _categoryId = val;
+                          _isSaved = false;
+                          _venueId = null;
+                        });
+                        await venueProvider.getVenues(_cityId, _categoryId);
+                        } 
+                      :null,
                     validator: (v) => v == null ? "Required" : null,
                   ),
                   
@@ -491,19 +600,22 @@ Future<void> _cancelEvent() async {
                     decoration: const InputDecoration(labelText: "City"),
                     value: cityProvider.cities.any((c) => c.id == _cityId) ? _cityId : null,
                     items: cityProvider.cities
-                          .map((c) => DropdownMenuItem<int>(
-                            value: c.id,
-                            child: Text(c.name)
-                          )).toList(),
-                    onChanged: (val) async {
-                      setState(() {
-                        _cityId = val;
-                        _venueId = null;
-                        _isSaved = false;
-                      });
-                      await venueProvider.getVenues(_cityId, _categoryId);
-                    },
-                    validator: (v) => v == null ? "Required" : null
+                        .map((c) => DropdownMenuItem<int>(
+                              value: c.id,
+                              child: Text(c.name),
+                            ))
+                        .toList(),
+                    onChanged: isEditable
+                        ? (val) async {
+                            setState(() {
+                              _cityId = val;
+                              _venueId = null;
+                              _isSaved = false;
+                            });
+                            await venueProvider.getVenues(_cityId, _categoryId);
+                          }
+                        : null,
+                    validator: (v) => v == null ? "Required" : null,
                   ),
 
                   const SizedBox(height: 8),
@@ -516,14 +628,14 @@ Future<void> _cancelEvent() async {
                             value: v.id,
                             child: Text(v.name),
                             )).toList(),
-                    onChanged: _cityId == null
-                        ? null
-                        : (val) { 
+                    onChanged:(isEditable && _cityId != null)
+                        ? (val) { 
                       setState(() {
                         _venueId = val;
                         _isSaved = false;
                       });
-                    },
+                    }
+                    : null,
                     validator: (v) => v == null ? "Required" : null,
                   ),
 
@@ -533,12 +645,13 @@ Future<void> _cancelEvent() async {
                     title: Text(_eventStartDate == null ? 'Select Start' : DateFormat('dd.MM.yyyy HH:mm').format(_eventStartDate!)),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: _pickStartDate,
+                    enabled: isEditable,
                   ),
                   ListTile(
                     title: Text(_eventEndDate == null ? 'Select End' : DateFormat('dd.MM.yyyy HH:mm').format(_eventEndDate!)),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: _eventStartDate == null ? null : _pickEndDate,
-                    enabled: _eventStartDate != null,
+                    enabled: _eventStartDate != null && isEditable,
                   ),
                   
                   const SizedBox(height: 20),
@@ -559,6 +672,7 @@ Future<void> _cancelEvent() async {
                           child: Column(
                             children: [
                               TextFormField(
+                                enabled: isEditable,
                                 initialValue: ticket.name,
                                 decoration: const InputDecoration(labelText: "Ticket Name"),
                                 validator: (v) => v == null || v.isEmpty ? "Required" : null,
@@ -571,6 +685,7 @@ Future<void> _cancelEvent() async {
                               ),
 
                               TextFormField(
+                                enabled: isEditable,
                                 initialValue: ticket.description,
                                 decoration: const InputDecoration(labelText: "Description (optional)"),
                                 onChanged: (val) { 
@@ -582,6 +697,7 @@ Future<void> _cancelEvent() async {
                               ),
 
                               TextFormField(
+                                enabled: isEditable,
                                 initialValue: ticket.price.toString(),
                                 decoration: const InputDecoration(labelText: "Price"),
                                 keyboardType: TextInputType.number,
@@ -595,6 +711,7 @@ Future<void> _cancelEvent() async {
                               ),
 
                               TextFormField(
+                                enabled: isEditable,
                                 initialValue: ticket.quantity.toString(),
                                 decoration: const InputDecoration(labelText: "Quantity"),
                                 keyboardType: TextInputType.number,
@@ -611,7 +728,7 @@ Future<void> _cancelEvent() async {
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: TextButton.icon(
-                                    onPressed: () => _removeTicketType(index), 
+                                    onPressed: () => isEditable ? _removeTicketType(index) : null, 
                                     icon: const Icon(Icons.remove_circle, color: Colors.red), 
                                     label: const Text("Remove")
                                   ),
@@ -626,7 +743,7 @@ Future<void> _cancelEvent() async {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: TextButton.icon(
-                      onPressed: _addTicketType,
+                      onPressed: isEditable ? _addTicketType : null,
                       icon: const Icon(Icons.add),
                       label: const Text("Add another ticket type"),
                     ),

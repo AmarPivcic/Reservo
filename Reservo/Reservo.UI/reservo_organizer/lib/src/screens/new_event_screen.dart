@@ -143,21 +143,53 @@ Future<void> _pickImage() async {
 }
 
 Future<void> _pickStartDate() async {
-    final pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
-    );
-    if (pickedDate == null) return;
+  final now = DateTime.now();
 
-    final pickedTime = await showTimePicker(
-      context: context,
-      initialTime: const TimeOfDay(hour: 18, minute: 0),
-    );
-    if (pickedTime == null) return;
+  final pickedDate = await showDatePicker(
+    context: context,
+    initialDate: now,
+    firstDate: now,
+    lastDate: DateTime(2100),
+  );
+  if (pickedDate == null) return;
 
-    final fullDate = DateTime(
+  TimeOfDay initialTime = const TimeOfDay(hour: 18, minute: 0);
+
+  if (pickedDate.year == now.year &&
+      pickedDate.month == now.month &&
+      pickedDate.day == now.day) {
+    final minHour = (now.hour + 2).clamp(0, 23);
+    initialTime = TimeOfDay(hour: minHour, minute: now.minute);
+  }
+
+  final pickedTime = await showTimePicker(
+    context: context,
+    initialTime: initialTime,
+  );
+
+  if (pickedTime == null) return;
+
+  if (pickedDate.year == now.year &&
+      pickedDate.month == now.month &&
+      pickedDate.day == now.day) {
+    final minTime = now.add(const Duration(hours: 2));
+    final pickedDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+    if (pickedDateTime.isBefore(minTime)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Selected time must be at least 2 hours from now")),
+      );
+      return;
+    }
+  }
+
+  setState(() {
+    _eventStartDate = DateTime(
       pickedDate.year,
       pickedDate.month,
       pickedDate.day,
@@ -165,13 +197,11 @@ Future<void> _pickStartDate() async {
       pickedTime.minute,
     );
 
-    setState(() {
-      _eventStartDate = fullDate;
-      if (_eventEndDate != null && _eventEndDate!.isBefore(fullDate)) {
-        _eventEndDate = null;
-      }
-    });
-  }
+    if (_eventEndDate != null && _eventEndDate!.isBefore(_eventStartDate!)) {
+      _eventEndDate = null;
+    }
+  });
+}
 
   Future<void> _pickEndDate() async {
     if (_eventStartDate == null) return;

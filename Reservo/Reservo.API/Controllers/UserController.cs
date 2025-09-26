@@ -50,7 +50,7 @@ namespace Reservo.API.Controllers
         }
 
         [HttpPut("UpdatePasswordByToken")]
-        public async Task<ActionResult> UpdatePasswordByToken([FromBody]UserUpdatePasswordDTO request)
+        public async Task<IActionResult> UpdatePasswordByToken([FromBody]UserUpdatePasswordDTO request)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
@@ -101,17 +101,24 @@ namespace Reservo.API.Controllers
         }
 
         [HttpGet("GetCurrentUser")]
-        public async Task<UserGetDTO> GetCurrentUser()
+        public async Task<IActionResult> GetCurrentUser()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+            try
             {
-                return await (_service as IUserService).GetCurrentUser(userId);
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+                {
+                    var user = await (_service as IUserService).GetCurrentUser(userId);
+                    return Ok(user);
+                }
+                return BadRequest(new { message = "User not found!" });
+            }
+            catch (UserException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
 
-            throw new Exception("User can't be found!");
-            
         }
     }
 }

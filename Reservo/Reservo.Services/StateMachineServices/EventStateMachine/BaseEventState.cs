@@ -45,12 +45,17 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
             throw new UserException("Action not allowed.");
         }
 
-        public virtual async Task<string> Delete(Event entity)
+        public virtual async Task<string> Delete(int id)
         {
             throw new UserException("Action not allowed.");
         }
 
         public virtual async Task<EventGetDTO> Cancel(int id)
+        {
+            throw new UserException("Action not allowed.");
+        }
+
+        public virtual async Task<EventGetDTO> Complete(int id)
         {
             throw new UserException("Action not allowed.");
         }

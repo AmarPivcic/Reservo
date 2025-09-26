@@ -18,52 +18,13 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
         {
         }
 
-        public override async Task<EventGetDTO> Cancel(int id)
+        public override async Task<EventGetDTO> Draft(int id)
         {
-            var entity = _context.Events.FirstOrDefault(e => e.Id == id);
-
-            if (entity != null)
-            {
-                entity.State = "cancelled";
-
-                await _context.SaveChangesAsync();
-            }
-            else
-            {
-                throw new UserException("Event not found!");
-            }
-
-            var updatedEntity = _context.Events
+            var entity = await _context.Events
                 .Include(e => e.TicketTypes)
                 .Include(e => e.Category)
                 .Include(e => e.Venue)
-                .Include(e => e.User)
-                .FirstOrDefault(e => e.Id == id);
-
-            return _mapper.Map<EventGetDTO>(updatedEntity);
-        }
-
-        public async override Task<EventGetDTO> Activate(int id)
-        {
-            var entity = _context.Events.FirstOrDefault(e => e.Id == id);
-
-            if (entity != null)
-            {
-                entity.State = "active";
-
-                await _context.SaveChangesAsync();
-
-                return _mapper.Map<EventGetDTO>(entity);
-            }
-            else
-            {
-                throw new UserException("Event not found!");
-            }
-        }
-
-        public override async Task<EventGetDTO> Draft(int id)
-        {
-            var entity = _context.Events.FirstOrDefault(e => e.Id == id);
+                .FirstOrDefaultAsync(e => e.Id == id);
 
             if (entity != null)
             {
@@ -76,14 +37,7 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
                 throw new UserException("Event not found!");
             }
 
-            var updatedEntity = _context.Events
-                .Include(e => e.TicketTypes)
-                .Include(e => e.Category)
-                .Include(e => e.Venue)
-                .Include(e => e.User)
-                .FirstOrDefault(e => e.Id == id);
-
-            return _mapper.Map<EventGetDTO>(updatedEntity);
+            return _mapper.Map<EventGetDTO>(entity);
         }
     }
 }

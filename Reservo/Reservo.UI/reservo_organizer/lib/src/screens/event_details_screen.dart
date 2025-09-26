@@ -33,7 +33,7 @@ void _editEvent() async {
 Future<void> _activateEvent() async{
   final ep = context.read<EventProvider>();
   try {
-    final updated = await ep.activateEvent(widget.eventData.id);
+    final updated = await ep.setEventActive(widget.eventData.id);
 
     setState(() {
       widget.eventData.state = updated.state;

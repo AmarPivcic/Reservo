@@ -28,48 +28,81 @@ namespace Reservo.API.Controllers
         }
 
         [HttpPost("{orderId}/Confirm")]
-        public async Task<IActionResult> ConfirmOrder(int orderId)
+        public async Task<IActionResult> ConfirmOrderPayment(int orderId)
         {
-            var result = await (_service as IOrderService).ConfirmOrderPayment(orderId);
-            return Ok(new { success = result });
+
+            try
+            {
+                var result = await (_service as IOrderService).ConfirmOrderPayment(orderId);
+                return Ok(new { success = result });
+            }
+            catch (UserException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+
         }
 
         [HttpGet("UserOrders")]
-        public async Task<IEnumerable<UserOrderGetDTO>> GetUserOrders()
+        public async Task<IActionResult> GetUserOrders()
         {
-            int UserId;
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
-            {
-                UserId = userId;
-                return await (_service as IOrderService).GetUserOrders(UserId);
-            }
 
-            throw new UserException("User not found!");
+            try
+            {
+                int UserId;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+                {
+                    UserId = userId;
+                    var orders = await (_service as IOrderService).GetUserOrders(UserId);
+                    return Ok(orders);
+                }
+                return BadRequest(new { message = "User not found!" });
+            }
+            catch (UserException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpGet("UserPreviousOrders")]
-        public async Task<IEnumerable<UserOrderGetDTO>> GetUserPreviousOrders()
+        public async Task<IActionResult> GetUserPreviousOrders()
         {
-            int UserId;
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+            try
             {
-                UserId = userId;
-                return await (_service as IOrderService).GetUserPreviousOrders(UserId);
+                int UserId;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+                {
+                    UserId = userId;
+                    var orders = await (_service as IOrderService).GetUserPreviousOrders(UserId);
+                    return Ok(orders);
+                }
+                return BadRequest(new { message = "User not found!" });
             }
+            catch (UserException ex)
+            {
 
-            throw new UserException("User not found!");
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpGet("UserOrders/{orderId}")]
-        public async Task<UserOrderDetailGetDTO> GetOrderDetail(int orderId)
-        {
-            return await (_service as IOrderService).GetOrderDetail(orderId);
+        public async Task<IActionResult> GetOrderDetail(int orderId)
+        { 
+            try
+            {
+                var orderDetail = await (_service as IOrderService).GetOrderDetail(orderId);
+                return Ok(orderDetail);
+            }
+            catch (UserException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPut("{orderId}/Cancel")]
-        public async Task<ActionResult> CancelOrder(int orderId)
+        public async Task<IActionResult> CancelOrder(int orderId)
         {
             try
             {

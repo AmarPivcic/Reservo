@@ -8,5 +8,7 @@ namespace Reservo.Model.Entities
 {
     public class Organizer : User
     {
+        public ICollection<Event> OrganizedEvents { get; set; }
+
     }
 }

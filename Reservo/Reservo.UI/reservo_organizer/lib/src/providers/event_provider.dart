@@ -78,7 +78,7 @@ class EventProvider extends BaseProvider<Event, EventInsertUpdate>
     );
   }
 
-  Future<Event> activateEvent(int eventId) async {
+  Future<Event> setEventActive(int eventId) async {
     try {
       final response = await http.patch(
         Uri.parse('${BaseProvider.baseUrl}/Event/$eventId/Activate'),
@@ -123,6 +123,28 @@ class EventProvider extends BaseProvider<Event, EventInsertUpdate>
     }
   }
 
+  Future<Event> setEventComplete(int eventId) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('${BaseProvider.baseUrl}/Event/$eventId/Complete'),
+        headers: await createHeaders(),
+      );
+
+      if(response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return Event.fromJson(data);
+      }
+      else {
+        handleHttpError(response);
+        throw Exception("Failed to set event to completed");
+      }
+    } on CustomException {
+      rethrow;
+    } catch (e) { 
+      throw CustomException("Can't reach the server. Please check your connection.");
+    }
+  }
+
   Future<Event> cancelEvent(int eventId) async {
     try {
       final response = await http.patch(
@@ -146,12 +168,33 @@ class EventProvider extends BaseProvider<Event, EventInsertUpdate>
     }
   }
 
-  Future<Event> setEventActive(int eventId) async {
-    return await activateEvent(eventId);
-  }
 
   Future<void> updateEvent(int eventId, EventInsertUpdate dto) async {
     await update(id: eventId, item: dto, toJson:(dto) => dto.toJson());
+  }
+
+  Future<void> deleteEvent(int eventId) async{
+    try {
+      final response = await http.delete(
+        Uri.parse('${BaseProvider.baseUrl}/Event/$eventId'),
+        headers: await createHeaders(),
+      );
+
+      print(Uri.parse('${BaseProvider.baseUrl}/Event/$eventId'));
+
+
+      if(response.statusCode == 200) {
+        return;
+      }
+      else {
+        handleHttpError(response);
+        throw Exception('Delete failed');
+      }
+    } on CustomException {
+      rethrow;
+    } catch (e) { 
+      throw CustomException("Can't reach the server. Please check your connection.");
+    }
   }
 
 }

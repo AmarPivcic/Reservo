@@ -17,5 +17,6 @@ namespace Reservo.Model.Entities
         [ForeignKey(nameof(Event))]
         public int EventId { get; set; }
         public Event Event { get; set; }
+        public ICollection<OrderDetail> OrderDetails { get; set; }
     }
 }

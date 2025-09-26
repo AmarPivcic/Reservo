@@ -13,7 +13,7 @@ class TicketTypeProvider extends BaseProvider<TicketType, TicketType> {
   Future<List<TicketType>> getTicketTypesForEvent(int eventId) async {
     try {
       final response = await http.get(
-        Uri.parse('${BaseProvider.baseUrl}/TicketType/Get/$eventId'),
+        Uri.parse('${BaseProvider.baseUrl}/TicketType/GetByEvent/$eventId'),
         headers: await createHeaders(),
       );
 
