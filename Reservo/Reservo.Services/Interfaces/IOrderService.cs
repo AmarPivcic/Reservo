@@ -18,5 +18,6 @@ namespace Reservo.Services.Interfaces
         public Task<IEnumerable<UserOrderGetDTO>> GetUserPreviousOrders(int userId);
         public Task<UserOrderDetailGetDTO> GetOrderDetail(int orderId);
         public Task CancelOrder(int orderId);
+        public Task CancelOrderLogic(Order order);
     }
 }

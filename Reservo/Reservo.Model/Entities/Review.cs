@@ -10,7 +10,7 @@ namespace Reservo.Model.Entities
     public class Review
     {
         public int Id { get; set; }
-        public string Comment { get; set; }
+        public string? Comment { get; set; }
         public int Rating { get; set; }
         public DateTime CreatedAt { get; set; }
         [ForeignKey(nameof(User))]
@@ -19,6 +19,9 @@ namespace Reservo.Model.Entities
         [ForeignKey(nameof(Event))]
         public int EventId { get; set; }
         public Event Event { get; set; }
+        [ForeignKey(nameof(Organizer))]
+        public int OrganizerId { get; set; } 
+        public User Organizer { get; set; }
 
     }
 }

@@ -101,6 +101,21 @@ namespace Reservo.API.Controllers
             }
         }
 
+        [HttpDelete]
+        public async Task<ActionResult<string>> Delete(int id)
+        {
+            try
+            {
+                await (_service as IEventService).Delete(id);
+                return Ok("Event deleted");
+            }
+            catch (UserException ex)
+            {
+
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpGet("{id}/AllowedActions")]
         public async Task<List<string>> AllowedActions(int id)
         {

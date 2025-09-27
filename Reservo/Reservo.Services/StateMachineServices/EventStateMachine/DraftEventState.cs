@@ -1,25 +1,22 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Reservo.Model.DTOs.Event;
 using Reservo.Model.Entities;
 using Reservo.Model.Utilities;
 using Reservo.Services.Database;
 using Reservo.Services.Interfaces;
-using Reservo.Services.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Reservo.Services.StateMachineServices.EventStateMachine
 {
     public class DraftEventState : BaseEventState
     {
-        public DraftEventState(ReservoContext context, IMapper mapper, IServiceProvider serviceProvider) : base(context, mapper, serviceProvider)
+        private readonly IStripeService _stripeService;
+        private readonly IOrderService _orderService;
+        public DraftEventState(ReservoContext context, IMapper mapper, IServiceProvider serviceProvider, IStripeService stripeService, IOrderService orderService) : base(context, mapper, serviceProvider)
         {
+            _stripeService = stripeService;
+            _orderService = orderService;
         }
 
         public async override Task<EventGetDTO> Activate(int id)
@@ -100,6 +97,13 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
         public override async Task<EventGetDTO> Cancel(int id)
         {
             var entity = await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
+            var orders = await _context.Orders
+                .Where(o => o.OrderDetails.Any(od => od.TicketType.EventId == id)).Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Tickets)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.TicketType)
+                    .ThenInclude(tt => tt.Event)
+                .ToListAsync();
 
             if (entity != null)
             {
@@ -110,6 +114,11 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
             else
             {
                 throw new UserException("Event not found!");
+            }
+
+            foreach (var order in orders)
+            {
+                await _orderService.CancelOrderLogic(order);
             }
 
             var updatedEntity = _context.Events
@@ -154,7 +163,10 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
                 var ev = await _context.Events
                     .Include(e => e.TicketTypes)
                         .ThenInclude(tt => tt.OrderDetails)
-                .ThenInclude(od => od.Tickets)
+                        .ThenInclude(od => od.Order)
+                    .Include(e => e.TicketTypes)
+                        .ThenInclude(tt => tt.OrderDetails)
+                        .ThenInclude(od => od.Tickets)
                     .FirstOrDefaultAsync(e => e.Id == id);
 
                 if (ev == null)
@@ -164,12 +176,15 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
                 {
                     foreach (var orderDetail in ticketType.OrderDetails)
                     {
-                        foreach (var ticket in orderDetail.Tickets)
-                        {
-                            await (_serviceProvider as IStripeService).RefundTicketAsync(ticket, orderDetail.Quantity);
-                        }
+                         await _stripeService.RefundTicketAsync(orderDetail);
                     }
                 }
+                var orders = _context.Orders
+                    .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.TicketType)
+                    .Where(o => o.OrderDetails.Any(od => od.TicketType.EventId == id))
+                    .ToList();
+                _context.Orders.RemoveRange(orders);
 
                 _context.Events.Remove(ev);
 

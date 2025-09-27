@@ -10,7 +10,7 @@ namespace Reservo.Services.Interfaces
 {
     public interface IStripeService
     {
-        Task RefundTicketAsync(Ticket ticket, int quantity);
+        Task RefundTicketAsync(OrderDetail orderDetail);
         Task CreateRefundAsync(string paymentIntentId);
         Task<IntentResponseDTO> CreatePaymentIntent(double amount);
     }

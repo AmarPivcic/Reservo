@@ -168,6 +168,11 @@ namespace Reservo.Services.Services
             if (eventDate <= DateTime.Now.AddDays(3))
                 throw new UserException("Orders can only be cancelled at least 3 days before the event");
 
+            await CancelOrderLogic(order);
+        }
+
+        public async Task CancelOrderLogic(Order order)
+        {
             await _stripeService.CreateRefundAsync(order.StripePaymentIntentId);
 
             order.State = "cancelled";
@@ -183,7 +188,6 @@ namespace Reservo.Services.Services
             }
 
             await _context.SaveChangesAsync();
-
         }
 
     }

@@ -47,14 +47,14 @@ namespace Reservo.Services.Services
             await refundService.CreateAsync(refundOptions);
         }
 
-        public async Task RefundTicketAsync(Ticket ticket, int quantity)
+        public async Task RefundTicketAsync(OrderDetail orderDetail)
         {
-            if (ticket.OrderDetail?.Order?.IsPaid == true && !string.IsNullOrEmpty(ticket.OrderDetail.Order.StripePaymentIntentId))
+            if (orderDetail.Order?.IsPaid == true && !string.IsNullOrEmpty(orderDetail.Order.StripePaymentIntentId))
             {
                 var options = new RefundCreateOptions
                 {
-                    PaymentIntent = ticket.OrderDetail.Order.StripePaymentIntentId,
-                    Amount = (long)(ticket.OrderDetail.UnitPrice * quantity * 100),
+                    PaymentIntent = orderDetail.Order.StripePaymentIntentId,
+                    Amount = (long)(orderDetail.UnitPrice * orderDetail.Quantity * 100),
                 };
 
                 var service = new RefundService();

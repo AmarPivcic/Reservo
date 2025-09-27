@@ -408,7 +408,7 @@ Future<void> _cancelEventPopUp() async {
     context: context, 
     builder: (_) => AlertDialog(
       title: const Text("Warning!"),
-      content: const Text("If you cancel this event, you will not be able to activate it again!"),
+      content: const Text("If you cancel this event, you will not be able to activate it again! All users that bought tickets will be refunded!"),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close")),
         OutlinedButton(onPressed: () {_cancelEvent(); Navigator.pop(context);}, child: const Text("Cancel event"), style: OutlinedButton.styleFrom(
