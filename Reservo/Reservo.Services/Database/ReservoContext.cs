@@ -102,6 +102,35 @@ namespace Reservo.Services.Database
                 .WithMany(u => u.OrganizedEvents)
                 .HasForeignKey(e => e.OrganizerId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Review>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+
+                entity.Property(r => r.Comment)
+                    .HasMaxLength(1000);
+
+                entity.Property(r => r.Rating)
+                    .IsRequired();
+
+                entity.Property(r => r.CreatedAt)
+                    .IsRequired();
+
+                entity.HasOne(r => r.Event)
+                    .WithMany(e => e.Reviews)
+                    .HasForeignKey(r => r.EventId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(r => r.User as Client)
+                    .WithMany(u => u.ReviewsWritten)
+                    .HasForeignKey(r => r.UserId)
+                    .OnDelete(DeleteBehavior.Restrict); 
+
+                entity.HasOne(r => r.Organizer as Organizer)
+                    .WithMany(u => u.ReviewsReceived)
+                    .HasForeignKey(r => r.OrganizerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
         }
     }
 }

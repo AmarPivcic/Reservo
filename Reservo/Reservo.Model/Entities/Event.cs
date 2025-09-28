@@ -27,6 +27,7 @@ namespace Reservo.Model.Entities
         public User User { get; set; }
 
         public ICollection<TicketType> TicketTypes { get; set; } = new List<TicketType>();
+        public ICollection<Review> Reviews { get; set; }
 
     }
 }
