@@ -5,11 +5,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:reservo_organizer/src/models/event/event.dart';
 import 'package:reservo_organizer/src/models/event/event_insert_update.dart';
+import 'package:reservo_organizer/src/models/review/review.dart';
 import 'package:reservo_organizer/src/models/ticket_type/ticket_type.dart';
 import 'package:reservo_organizer/src/models/ticket_type/ticket_type_insert.dart';
 import 'package:reservo_organizer/src/providers/category_provider.dart';
 import 'package:reservo_organizer/src/providers/city_provider.dart';
 import 'package:reservo_organizer/src/providers/event_provider.dart';
+import 'package:reservo_organizer/src/providers/review_provider.dart';
 import 'package:reservo_organizer/src/providers/ticket_type_provider.dart';
 import 'package:reservo_organizer/src/providers/venue_provider.dart';
 import 'package:reservo_organizer/src/screens/home_screen.dart';
@@ -45,10 +47,13 @@ class _EventEditScreenState extends State<EventEditScreen> {
   bool _isActivating = false;
   bool _isSaved = false;
   late bool isEditable;
+  late Future<List<Review>> _reviewsFuture;
 
   @override
   void initState() {
     super.initState();
+
+    final reviewProvider = Provider.of<ReviewProvider>(context, listen: false);
 
     isEditable = widget.previousState.toLowerCase() == "active" ||
                   widget.previousState.toLowerCase() == "draft";
@@ -61,6 +66,10 @@ class _EventEditScreenState extends State<EventEditScreen> {
     _venueId = widget.eventData.venueId;
     _eventImage = widget.eventData.image;
     _cityId = widget.eventData.cityId;
+
+    if(!isEditable) {
+      _reviewsFuture = reviewProvider.getReviewsForEvent(widget.eventData.id);
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final cap = context.read<CategoryProvider>();
@@ -455,6 +464,7 @@ Future<void> _cancelEvent() async {
   } 
 }
 
+
   @override
   Widget build(BuildContext context) {
     final categoryProvider = context.watch<CategoryProvider>();
@@ -724,11 +734,11 @@ Future<void> _cancelEvent() async {
                                 },
                               ),
 
-                              if(index > 0)
+                              if(index > 0 && isEditable)
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: TextButton.icon(
-                                    onPressed: () => isEditable ? _removeTicketType(index) : null, 
+                                    onPressed: () => _removeTicketType(index), 
                                     icon: const Icon(Icons.remove_circle, color: Colors.red), 
                                     label: const Text("Remove")
                                   ),
@@ -740,14 +750,83 @@ Future<void> _cancelEvent() async {
                     }).toList(),
                   ),
 
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                      onPressed: isEditable ? _addTicketType : null,
-                      icon: const Icon(Icons.add),
-                      label: const Text("Add another ticket type"),
+                  if(isEditable)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: _addTicketType,
+                        icon: const Icon(Icons.add),
+                        label: const Text("Add another ticket type"),
+                      ),
                     ),
-                  ),
+                  if (!isEditable) ...[
+                    const SizedBox(height: 20),
+
+                    Text("Reviews", style: Theme.of(context).textTheme.headlineSmall),
+
+                    const SizedBox(height: 8),
+
+                    FutureBuilder<List<Review>>(
+                      future: _reviewsFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return Text("Failed to load reviews: ${snapshot.error}");
+                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return const Text("No reviews yet.");
+                        }
+
+                        final reviews = snapshot.data!;
+                        return Column(
+                          children: reviews.map((review) {
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: List.generate(5, (i) {
+                                        return Icon(
+                                          i < review.rating! ? Icons.star : Icons.star_border,
+                                          color: Colors.amber,
+                                          size: 20,
+                                        );
+                                      }),
+                                    ),
+                                    const SizedBox(height: 4),
+
+                                    if (review.comment!.isNotEmpty)
+                                      Text(review.comment!,
+                                          style: const TextStyle(fontSize: 14)),
+
+                                    const SizedBox(height: 6),
+
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text("By ${review.username ?? 'Anonymous'}",
+                                            style: const TextStyle(
+                                                fontStyle: FontStyle.italic, fontSize: 12)),
+                                        Text(
+                                          DateFormat('dd.MM.yyyy HH:mm')
+                                              .format(review.createdAt!),
+                                          style: const TextStyle(
+                                              color: Colors.grey, fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      },
+                    )
+                  ],
                 ],
               ),
             )

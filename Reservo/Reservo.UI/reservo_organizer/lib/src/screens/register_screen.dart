@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:reservo_client/constants.dart';
-import 'package:reservo_client/src/models/user/user_insert.dart';
-import 'package:reservo_client/src/providers/auth_provider.dart';
-import 'package:reservo_client/src/screens/home_screen.dart';
-import 'package:reservo_client/src/screens/master_screen.dart';
+import 'package:reservo_organizer/constants.dart';
+import 'package:reservo_organizer/src/models/user/user_insert.dart';
+import 'package:reservo_organizer/src/providers/auth_provider.dart';
+import 'package:reservo_organizer/src/screens/master_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -57,11 +56,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
 
       await authProvider.register(dto);
-      await authProvider.login(_usernameController.text, _passwordController.text);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
+      await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("Success"),
+          content: const Text("Registration successful! Please wait for administrator to activate your account."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              }, 
+              child: const Text("OK")
+              )
+          ],
+        )
+      );
       } catch (e) {
         setState(() {
           _errorMessage = e.toString();
@@ -276,10 +286,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               minimumSize: const Size.fromHeight(48),
                             ),
                           ),
-
                     const SizedBox(height: 16),
 
-                    ElevatedButton(
+                      ElevatedButton(
                             onPressed: () {
                               Navigator.pop(context);
                             },

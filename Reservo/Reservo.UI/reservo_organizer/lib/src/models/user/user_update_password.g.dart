@@ -8,9 +8,9 @@ part of 'user_update_password.dart';
 
 UserUpdatePassword _$UserUpdatePasswordFromJson(Map<String, dynamic> json) =>
     UserUpdatePassword(
-      oldPassword: json['oldPassword'] as String,
-      newPassword: json['newPassword'] as String,
-      confirmNewPassword: json['confirmNewPassword'] as String,
+      oldPassword: json['oldPassword'] as String?,
+      newPassword: json['newPassword'] as String?,
+      confirmNewPassword: json['confirmNewPassword'] as String?,
     );
 
 Map<String, dynamic> _$UserUpdatePasswordToJson(UserUpdatePassword instance) =>

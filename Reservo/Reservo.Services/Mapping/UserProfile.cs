@@ -16,7 +16,12 @@ namespace Reservo.Services.Mapping
 
             CreateMap<UserInsertDTO, User>()
                 .ForMember(dest => dest.CityId, opt => opt.Ignore())
-                .ForMember(dest => dest.City, opt => opt.Ignore());
+                .ForMember(dest => dest.City, opt => opt.Ignore())
+                .ConstructUsing(src =>
+                    src.RoleId == 1 ? new Admin() :
+                    src.RoleId == 2 ? new Client() :
+                    src.RoleId == 3 ? new Organizer() :
+                    new User());
             CreateMap<UserUpdateDTO, User>()
                 .ForMember(dest => dest.Username, opt => opt.Ignore())
                 .ForMember(dest => dest.City, opt => opt.Ignore())

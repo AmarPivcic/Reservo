@@ -5,6 +5,7 @@ import 'package:reservo_client/src/providers/auth_provider.dart';
 import 'package:reservo_client/src/providers/category_provider.dart';
 import 'package:reservo_client/src/providers/city_provider.dart';
 import 'package:reservo_client/src/providers/event_provider.dart';
+import 'package:reservo_client/src/providers/review_provider.dart';
 import 'package:reservo_client/src/providers/ticket_type_provider.dart';
 import 'package:reservo_client/src/providers/user_provider.dart';
 import 'package:reservo_client/src/providers/order_provider.dart';
@@ -27,6 +28,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => TicketTypeProvider()),
         ChangeNotifierProvider(create: (_) => OrderProvider()),
+        ChangeNotifierProvider(create: (_) => ReviewProvider()),
       ],
       child:  const MyApp(),
     ),

@@ -44,6 +44,7 @@ namespace Reservo.Services.Services
         public async Task<IEnumerable<ReviewGetDTO>> GetByEventId(int eventId)
         {
             var reviews = await _context.Reviews
+                .Include(r => r.User)
                 .Where(r => r.EventId == eventId).ToListAsync();
 
             if(reviews == null)

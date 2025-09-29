@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:reservo_organizer/src/models/search_result.dart';
 import 'package:reservo_organizer/src/models/venue/venue.dart';
+import 'package:reservo_organizer/src/models/venue_request/venue_request.dart';
+import 'package:reservo_organizer/src/models/venue_request/venue_request_insert.dart';
 import 'package:reservo_organizer/src/providers/base_provider.dart';
 
 class VenueProvider extends BaseProvider<Venue, Venue> {
@@ -32,6 +36,24 @@ class VenueProvider extends BaseProvider<Venue, Venue> {
       countOfVenues = 0;
       isLoading=false;
       notifyListeners();
+    }
+  }
+
+  Future<VenueRequest> requestVenue(VenueRequestInsert requestData) async {
+    final response = await http.post(
+      Uri.parse("${BaseProvider.baseUrl}/VenueRequest"),
+      headers: await createHeaders(),
+      body: jsonEncode(requestData.toJson()),
+    );
+
+    print("${BaseProvider.baseUrl}/VenueRequest");
+    print(response.body);
+
+    if(response.statusCode == 200){
+        final data = jsonDecode(response.body)as Map<String, dynamic>;
+        return VenueRequest.fromJson(data);
+    }else {
+        throw Exception("Failed to create request");
     }
   }
 }

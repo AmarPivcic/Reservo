@@ -68,7 +68,7 @@ class AuthProvider extends BaseProvider<AuthProvider, AuthProvider>
 
   Future<void> register(UserInsert dto) async {
     final response = await http.post(
-      Uri.parse("${BaseProvider.baseUrl}/User"),
+      Uri.parse("${BaseProvider.baseUrl}/User/InsertClient"),
       headers: await createHeaders(),
       body: jsonEncode(dto.toJson()),
     );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:reservo_client/src/models/order_details/order_details.dart';
 import 'package:reservo_client/src/models/review/review.dart';
+import 'package:reservo_client/src/providers/review_provider.dart';
 import 'package:reservo_client/src/screens/home_screen.dart';
 import 'package:reservo_client/src/screens/master_screen.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -33,8 +34,61 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     _loadReview();
   }
 
+  Future<void> _deleteReviewPopUp(int reviewId) async {
+  showDialog(
+    context: context, 
+    builder: (_) => AlertDialog(
+      title: const Text("Warning!"),
+      content: const Text("Are you sure you want to delete this review?"),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close")),
+        OutlinedButton(onPressed: () {_deleteReview(reviewId); Navigator.pop(context);}, child: const Text("Delete"), style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              side: const BorderSide(color: Colors.red),
+                            ),),  
+      ],
+    )
+  );
+}
+
+Future<void> _deleteReview(int reviewId) async {
+  final rp = context.read<ReviewProvider>();
+  try {
+    await rp.deleteReview(reviewId);
+    setState(() {
+      _orderReview = null; 
+      _selectedRating = 0;
+      _commentController.clear();
+    });
+    await showDialog(
+      context: context, 
+      builder: (_) => AlertDialog(
+        title: const Text("Deleted"),
+        content: const Text("Review deleted successfully."),
+        actions: [
+         TextButton(onPressed: () {
+            Navigator.pop(context);
+            }, child: const Text("OK"))
+        ],
+      )
+    );
+  } catch (e) {
+    await showDialog(
+      context: context, 
+      builder: (_) => AlertDialog(
+        title: const Text("Error"),
+        content: const Text("Failed to delete review"),
+        actions: [
+          TextButton(onPressed: () {
+            Navigator.pop(context);
+            }, child: const Text("OK"))
+        ],
+      ));
+  } 
+}
+
   Future<void> _loadReview() async {
-  final review = await context.read<OrderProvider>().getReviewForOrder(widget.orderId);
+  final review = await context.read<ReviewProvider>().getReviewForOrder(widget.orderId);
     if (review != null && review.rating != null) {
       setState(() {
         _orderReview = review;
@@ -55,7 +109,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     setState(() => _isSubmittingReview = true);
 
     try {
-      final review = await context.read<OrderProvider>().createReview(
+      final review = await context.read<ReviewProvider>().createReview(
         widget.orderId,
         order.eventId,
         _selectedRating,
@@ -118,9 +172,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Widget _buildReviewSection(OrderDetails order) {
-    // if (order.state.toLowerCase() != "completed") {
-    //   return const SizedBox.shrink();
-    // }
+    if (order.state.toLowerCase() != "completed") {
+      return const SizedBox.shrink();
+    }
 
   if (_orderReview != null && _orderReview!.rating != null) {
     return SizedBox(
@@ -159,6 +213,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   "No comment provided",
                   style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
                 ),
+
+                TextButton(
+                  onPressed: () => {
+                    _deleteReviewPopUp(_orderReview!.id!)
+                  }, 
+                  child: Text("Delete"))
             ],
           ),
         ),

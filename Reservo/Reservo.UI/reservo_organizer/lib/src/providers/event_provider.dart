@@ -179,10 +179,7 @@ class EventProvider extends BaseProvider<Event, EventInsertUpdate>
         Uri.parse('${BaseProvider.baseUrl}/Event/$eventId'),
         headers: await createHeaders(),
       );
-
-      print(Uri.parse('${BaseProvider.baseUrl}/Event/$eventId'));
-
-
+      
       if(response.statusCode == 200) {
         return;
       }

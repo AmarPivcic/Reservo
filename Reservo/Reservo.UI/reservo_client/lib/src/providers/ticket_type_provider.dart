@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:reservo_client/src/models/search_result.dart';
 import 'package:reservo_client/src/models/ticket_type/ticket_type.dart';
 import 'package:http/http.dart' as http;
 import 'package:reservo_client/src/providers/base_provider.dart';

@@ -30,6 +30,7 @@ namespace Reservo.Services.Database
         public DbSet<TicketType> TicketTypes { get; set; }
         public DbSet<Venue> Venues { get; set; }
         public DbSet<VenueCategory> VenueCategories { get; set; }
+        public DbSet<VenueRequest> VenueRequests { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -124,13 +125,27 @@ namespace Reservo.Services.Database
                 entity.HasOne(r => r.User as Client)
                     .WithMany(u => u.ReviewsWritten)
                     .HasForeignKey(r => r.UserId)
-                    .OnDelete(DeleteBehavior.Restrict); 
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(r => r.Organizer as Organizer)
                     .WithMany(u => u.ReviewsReceived)
                     .HasForeignKey(r => r.OrganizerId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+
+            modelBuilder.Entity<User>()
+                .HasDiscriminator<string>("Discriminator")
+                .HasValue<User>("User")
+                .HasValue<Client>("Client")
+                .HasValue<Organizer>("Organizer")
+                .HasValue<Admin>("Admin");
+
+
+            modelBuilder.Entity<VenueRequest>()
+                .HasOne(vr => vr.Organizer)
+                .WithMany()
+                .HasForeignKey(vr => vr.OrganizerId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -19,28 +19,52 @@ namespace Reservo.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost()]
-        public async override Task<UserGetDTO> Insert(UserInsertDTO request)
+        [HttpPost("InsertAdmin")]
+        public async Task<IActionResult> InsertAdmin([FromBody] UserInsertDTO request)
         {
-            request.RoleId = 2;
-            request.Active = true;
-            return await (_service as IUserService).Insert(request);
+            request.RoleId = 1;
+            try
+            {
+                var response = await (_service as IUserService).Insert(request);
+                return Ok(response);
+            }
+            catch (UserException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [AllowAnonymous]
-        [HttpPost("InsertAdmin")]
-        public async Task<UserGetDTO> InsertAdmin(UserInsertDTO request)
+        [HttpPost("InsertClient")]
+        public async Task<IActionResult> InsertClient([FromBody] UserInsertDTO request)
         {
-            request.RoleId = 1;
-            return await (_service as IUserService).Insert(request); 
+            request.RoleId = 2;
+            request.Active = true;
+            try
+            {
+                var response = await (_service as IUserService).Insert(request);
+                return Ok(response);
+            }
+            catch (UserException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
-        
+
         [AllowAnonymous]
         [HttpPost("InsertOrganizer")]
-        public async Task<UserGetDTO> InsertOrganizer(UserInsertDTO request)
+        public async Task<IActionResult> InsertOrganizer([FromBody] UserInsertDTO request)
         {
             request.RoleId = 3;
-            return await (_service as IUserService).Insert(request);
+            try
+            {
+                var response = await (_service as IUserService).Insert(request);
+                return Ok(response);
+            }
+            catch (UserException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPut("UpdateByToken")]

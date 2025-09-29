@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reservo_organizer/src/models/event/event_insert_update.dart';
 import 'package:reservo_organizer/src/models/ticket_type/ticket_type_insert.dart';
+import 'package:reservo_organizer/src/models/venue_request/venue_request_insert.dart';
 import 'package:reservo_organizer/src/providers/category_provider.dart';
 import 'package:reservo_organizer/src/providers/city_provider.dart';
 import 'package:reservo_organizer/src/providers/event_provider.dart';
@@ -240,6 +241,136 @@ Future<void> _pickStartDate() async {
     });
   }
 
+  
+  Future<void> _requestVenuePopUp() async {
+    final _formKey = GlobalKey<FormState>();
+    String? venueName;
+    String? cityName;
+    String? address;
+    int? capacity;
+    String? description;
+    String? allowedCategories;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text("Request a new venue"),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.4,
+            child: SingleChildScrollView(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: "Venue Name"),
+                      validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                      onSaved: (v) => venueName = v,
+                    ),
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: "City Name"),
+                      validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                      onSaved: (v) => cityName = v,
+                    ),
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: "Address"),
+                      validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                      onSaved: (v) => address = v,
+                    ),
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: "Capacity"),
+                      keyboardType: TextInputType.number,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return "Required";
+                        final val = int.tryParse(v);
+                        if (val == null || val <= 0) return "Must be > 0";
+                        return null;
+                      },
+                      onSaved: (v) => capacity = int.tryParse(v ?? "0"),
+                    ),
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: "Description (optional)"),
+                      onSaved: (v) => description = v,
+                    ),
+                    TextFormField(
+                      decoration: const InputDecoration(
+                          labelText: "Allowed Categories (comma separated)"),
+                      onSaved: (v) => allowedCategories = v,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+              if (_formKey.currentState!.validate()) {
+                _formKey.currentState!.save();
+
+                final vp = context.read<VenueProvider>();
+                try {
+                  final requestInsert = VenueRequestInsert(
+                    venueName: venueName!, 
+                    cityName: cityName!, 
+                    address: address!, 
+                    capacity: capacity!, 
+                    description: description,
+                    allowedCategories: allowedCategories!
+                  );
+
+                  final request = await vp.requestVenue(requestInsert);
+
+                  Navigator.of(ctx).pop();
+
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Text("Success!"),
+                      content: Text("Venue request submitted for venue: ${request.venueName}"),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text("Close"),
+                        ),
+                      ],
+                    ),
+                  );
+                } catch (e) {
+
+                  Navigator.of(ctx).pop();
+
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Text("Error!"),
+                      content: Text("Error: $e"),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text("Close"),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              }
+            },
+
+              child: const Text("Submit"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final categoryProvider = Provider.of<CategoryProvider>(context);
@@ -356,6 +487,15 @@ Future<void> _pickStartDate() async {
                     validator: (v) => v == null ? "Required" : null,
                   ),
 
+                  const SizedBox(height: 12),
+
+                  TextButton(
+                    onPressed:_requestVenuePopUp,
+                    child: const Text("Missing venue? Request here"),
+                  ),
+
+                  const SizedBox(height: 12),
+
                   ListTile(
                     title: Text(
                       _eventStartDate == null
@@ -385,7 +525,7 @@ Future<void> _pickStartDate() async {
                     children: _ticketTypes.map((ticket) {
                       final index = _ticketTypes.indexOf(ticket);
                       return Card(
-                        key: ValueKey(ticket), // <-- important
+                        key: ValueKey(ticket),
                         margin: const EdgeInsets.symmetric(vertical: 8),
                         child: Padding(
                           padding: const EdgeInsets.all(12),

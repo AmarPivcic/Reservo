@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:reservo_organizer/src/models/user/user_insert.dart';
 import 'package:reservo_organizer/src/providers/base_provider.dart';
 import 'package:reservo_organizer/src/utilities/custom_exception.dart';
 
@@ -31,7 +32,7 @@ class AuthProvider extends BaseProvider<AuthProvider, AuthProvider>
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        final token = data['token']; // only the token, not the whole JSON
+        final token = data['token'];
         await storage.write(key: 'jwt_token', value: token);
         isLoggedIn = true;
       }else {
@@ -42,6 +43,25 @@ class AuthProvider extends BaseProvider<AuthProvider, AuthProvider>
     } catch (e) {
       throw CustomException("Can't reach the server. Please check your connection.");
     }
+  }
+
+  Future<void> register(UserInsert dto) async {
+      try {
+        final response = await http.post(
+          Uri.parse("${BaseProvider.baseUrl}/User/InsertOrganizer"),
+          headers: await createHeaders(),
+          body: jsonEncode(dto.toJson()),
+        );
+        if (response.statusCode != 200 && response.statusCode != 201) {
+          final Map<String, dynamic> errorData = jsonDecode(response.body);
+          final message = errorData['message'] ?? 'Unknown error';
+          throw CustomException(message);
+        }
+      } on CustomException {
+        rethrow;
+      } catch (e) { 
+        throw CustomException("Can't reach the server. Please check your connection.");
+      }
   }
 
   Future<void> logout() async {
@@ -64,5 +84,7 @@ class AuthProvider extends BaseProvider<AuthProvider, AuthProvider>
       throw CustomException("Can't reach the server. Please check your connection.");
     }
   }
+
+
 
 }

@@ -1,11 +1,8 @@
 import 'dart:convert';
-
 import 'package:reservo_client/src/models/order/order.dart';
 import 'package:reservo_client/src/models/order/order_insert.dart';
 import 'package:reservo_client/src/models/order/user_order.dart';
 import 'package:reservo_client/src/models/order_details/order_details.dart';
-import 'package:reservo_client/src/models/review/review.dart';
-import 'package:reservo_client/src/models/review/review_insert.dart';
 import 'package:reservo_client/src/providers/base_provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -81,54 +78,5 @@ class OrderProvider extends BaseProvider<Order, OrderInsert>
 
     return response.statusCode == 200;
   }
-
-Future<Review?> getReviewForOrder(int orderId) async {
-  final response = await http.get(
-    Uri.parse('${BaseProvider.baseUrl}/Review/OrderReview/$orderId'),
-    headers: await createHeaders(),
-  );
-
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-
-    if (data != null && data is Map<String, dynamic> && data.isNotEmpty) {
-      return Review.fromJson(data);
-    }
-
-    return null;
-  } else if (response.statusCode == 204) {
-    return null; 
-  } else {
-    throw Exception("Failed to load review data");
-  }
-}
-
-  deleteReview(int reviewId) {
-
-  }
-
-  Future<Review> createReview(int id, int eventId, int rating, String comment) async {
-    final reviewInsert = ReviewInsert(
-      comment: comment,
-      rating: rating,
-      eventId: eventId
-    );
-
-    final response = await http.post(
-      Uri.parse('${BaseProvider.baseUrl}/Review/InsertReview'),
-      headers: await createHeaders(),
-      body: jsonEncode(reviewInsert.toJson())
-    );
-
-    if(response.statusCode == 200)
-    {
-      final data = jsonDecode(response.body)as Map<String, dynamic>;
-      return Review.fromJson(data);
-    }else {
-      throw Exception("Failed to insert review");
-    }
-  }
-
-
 }
 

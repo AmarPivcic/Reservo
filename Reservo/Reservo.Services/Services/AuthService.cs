@@ -40,7 +40,7 @@ namespace Reservo.Services.Services
 
             if (user.Active == false)
             {
-                var admin = await _context.Users.Take(1).FirstOrDefaultAsync();
+                var admin = await _context.Users.Take(1).FirstOrDefaultAsync(u => u.RoleId == 1);
                 throw new UserException($"Your account is inactive! Please contact the administrator! Phone: {admin!.Phone} Email: {admin.Email}");
             }
 

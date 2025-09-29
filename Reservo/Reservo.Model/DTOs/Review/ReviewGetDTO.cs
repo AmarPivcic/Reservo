@@ -9,6 +9,7 @@ namespace Reservo.Model.DTOs.Review
 {
     public class ReviewGetDTO
     {
+            public int Id { get; set; }
             public string? Comment { get; set; }
             public int Rating { get; set; }
             public DateTime CreatedAt { get; set; }

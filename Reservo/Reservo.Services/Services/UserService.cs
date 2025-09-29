@@ -223,6 +223,7 @@ namespace Reservo.Services.Services
             }
         }
 
+
         public override async Task BeforeInsert(User entity, UserInsertDTO request)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
