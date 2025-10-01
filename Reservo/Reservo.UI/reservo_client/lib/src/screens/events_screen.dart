@@ -260,6 +260,14 @@ class _EventsScreenState extends State<EventsScreen> {
                                                 fontSize: 16,
                                               ),
                                             ),
+                                             const SizedBox(width: 4),
+                                            Text(
+                                              "(Organizer Rating)",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.white.withOpacity(0.6), // subtle opacity
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),

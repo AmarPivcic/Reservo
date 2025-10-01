@@ -72,22 +72,32 @@ class EventProvider extends BaseProvider<Event, Event>
   }
 
   Future<void> getRatedEvents() async {
-    print("Hit RATED");
     isLoading = true;
     notifyListeners();
-    try {
-      SearchResult<Event> searchResult = await get(
-        fromJson: (json) => Event.fromJson(json),
-        customEndpoint: 'GetByRating'
-      );
 
-    events = searchResult.result;
-    countOfEvents = searchResult.count;
-    isLoading = false;
-    notifyListeners();
+    try {
+      final response = await http.get(        
+        Uri.parse('${BaseProvider.baseUrl}/Event/GetByRating'),
+        headers: await createHeaders()
+        );
+
+
+      if (response.statusCode == 200) {
+
+        final List<dynamic> data = json.decode(response.body);
+
+        events = data.map((eventJson) => Event.fromJson(eventJson)).toList();
+
+
+        countOfEvents = events.length;
+      } else {
+        events = [];
+        countOfEvents = 0;
+      }
     } catch (e) {
       events = [];
       countOfEvents = 0;
+    } finally {
       isLoading = false;
       notifyListeners();
     }

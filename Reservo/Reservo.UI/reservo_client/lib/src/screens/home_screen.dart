@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.star, color: Colors.yellow, size: 40),
+                                Icon(Icons.star, color: Colors.white, size: 40),
                                 SizedBox(width: 12),
                                 Text(
                                   "Best Rated",
@@ -77,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
-                                ),
+                                )
                               ],
                             ),
                             Icon(Icons.arrow_forward_ios,
