@@ -29,6 +29,7 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
     Map<String, dynamic>? filter,
     required T Function(Map<String, dynamic>) fromJson,
   }) async {
+
     try {
       String queryString =
           filter != null ? Uri(queryParameters: filter).query : '';
@@ -38,6 +39,7 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
         Uri.parse(url),
         headers: await createHeaders(),
       );
+
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;

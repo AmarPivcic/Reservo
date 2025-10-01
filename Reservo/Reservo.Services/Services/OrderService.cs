@@ -7,7 +7,9 @@ using Reservo.Model.SearchObjects;
 using Reservo.Model.Utilities;
 using Reservo.Services.Database;
 using Reservo.Services.Interfaces;
-using Stripe;
+using MassTransit;
+using ReservationEmailConsumer.Contracts;
+
 
 
 namespace Reservo.Services.Services
@@ -15,9 +17,11 @@ namespace Reservo.Services.Services
     public class OrderService : BaseService<Order, OrderGetDTO, OrderInsertDTO, OrderUpdateDTO, OrderSearchObject>, IOrderService
     {
         private readonly IStripeService _stripeService;
-        public OrderService(ReservoContext context, IMapper mapper, IStripeService stripeService) : base(context, mapper)
+        private readonly IPublishEndpoint _publishEndpoint;
+        public OrderService(ReservoContext context, IMapper mapper, IStripeService stripeService, IPublishEndpoint publishEndpoint) : base(context, mapper)
         {
             _stripeService = stripeService;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<OrderGetDTO> CreateOrder(OrderInsertDTO request)
@@ -78,6 +82,7 @@ namespace Reservo.Services.Services
         {
             var order = await _context.Orders
                 .Include(o => o.OrderDetails)
+                .Include(o => o.User)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null) throw new UserException("Order not found");
@@ -105,6 +110,15 @@ namespace Reservo.Services.Services
             }
 
             await _context.SaveChangesAsync();
+
+
+            await _publishEndpoint.Publish(new ReservationEmailMessage
+            {
+                UserEmail = order.User.Email,
+                Subject = "Order Confirmation",
+                BodyHtml = $"Thank you {order.User.Username}, your order #{order.Id} has been confirmed!"
+            });
+
             return true;
         }
 

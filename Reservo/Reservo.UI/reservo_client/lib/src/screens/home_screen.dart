@@ -44,75 +44,113 @@ class _HomeScreenState extends State<HomeScreen> {
             : Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  "Categories",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ...categoryProvider.categories.map((category) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    width: double.infinity,
-                    child: Material(
-                      color: Colors.grey[800],
+
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  width: double.infinity,
+                  child: Material(
+                    color: Colors.grey[800],
+                    borderRadius: BorderRadius.circular(12),
+                    child: InkWell(
                       borderRadius: BorderRadius.circular(12),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(12),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => EventsScreen(categoryData: category),
-                            ),
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  SizedBox(
-                                    width: 40,
-                                    height: 40,
-                                    child: category.image != null &&
-                                            category.image!.isNotEmpty
-                                        ? Image.memory(
-                                            base64Decode(category.image!),
-                                            width: 50,
-                                            height: 50,
-                                            fit: BoxFit.cover,
-                                          )
-                                        : Image.asset(
-                                            'lib/src/assets/images/LogoLight.png',
-                                            height: 50,
-                                            width: 50,
-                                            fit: BoxFit.cover,
-                                          ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    category.name,
-                                    style: const TextStyle(
-                                        fontSize: 20, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                              const Icon(Icons.arrow_forward_ios,
-                                  size: 16, color: Colors.white)
-                            ],
+                      onTap: () {
+                        // Navigate to best rated events screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EventsScreen(bestRated: true,),
                           ),
+                        );
+                      },
+                      child: const Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.star, color: Colors.yellow, size: 40),
+                                SizedBox(width: 12),
+                                Text(
+                                  "Best Rated",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Icon(Icons.arrow_forward_ios,
+                                size: 16, color: Colors.white),
+                          ],
                         ),
                       ),
                     ),
-                  );
-                })
-              ],
+                  ),
+                ),
+
+    ...categoryProvider.categories.map((category) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        width: double.infinity,
+        child: Material(
+          color: Colors.grey[800],
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>  EventsScreen(categoryData: category, bestRated: false),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: category.image != null &&
+                                category.image!.isNotEmpty
+                            ? Image.memory(
+                                base64Decode(category.image!),
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.asset(
+                                'lib/src/assets/images/LogoLight.png',
+                                height: 50,
+                                width: 50,
+                                fit: BoxFit.cover,
+                              ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        category.name,
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const Icon(Icons.arrow_forward_ios,
+                      size: 16, color: Colors.white),
+                ],
+              ),
             ),
+          ),
+        ),
+      );
+    }),
+  ],
+)
+
           ),
         ),
       )

@@ -8,9 +8,9 @@ import 'package:reservo_client/src/screens/event_details_screen.dart';
 import 'package:reservo_client/src/screens/master_screen.dart';
 
 class EventsScreen extends StatefulWidget {
-  final Category categoryData;
-
-  const EventsScreen({super.key, required this.categoryData});
+  final Category? categoryData;
+  final bool bestRated;
+  const EventsScreen({super.key, this.categoryData, this.bestRated = false});
 
   @override
   State<EventsScreen> createState() => _EventsScreenState();
@@ -27,8 +27,14 @@ class _EventsScreenState extends State<EventsScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final ep = context.read<EventProvider>();
-      ep.getEvents(categoryId: widget.categoryData.id);
+      
+      if (widget.bestRated) {
+        ep.getRatedEvents();
+      } else if (widget.categoryData != null) {
+        ep.getEvents(categoryId: widget.categoryData!.id);
+      }
     });
+
   }
 
   void _openFilters(BuildContext context) {
@@ -100,7 +106,7 @@ class _EventsScreenState extends State<EventsScreen> {
                         onPressed: () {
                           final ep = context.read<EventProvider>();
                           ep.getEvents(
-                            categoryId: widget.categoryData.id,
+                            categoryId: widget.categoryData!.id,
                             nameFilter: _nameController.text,
                             cityFilter: _cityController.text,
                             venueFilter: _venueController.text,
@@ -119,7 +125,7 @@ class _EventsScreenState extends State<EventsScreen> {
                           setModalState(() => _selectedDate = null);
 
                           final ep = context.read<EventProvider>();
-                          ep.getEvents(categoryId: widget.categoryData.id);
+                          ep.getEvents(categoryId: widget.categoryData!.id);
 
                           Navigator.pop(context);
                         },
@@ -154,7 +160,7 @@ class _EventsScreenState extends State<EventsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  widget.categoryData.name,
+                  widget.bestRated ? "Best rated" : widget.categoryData?.name ?? "",
                   style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
@@ -239,9 +245,28 @@ class _EventsScreenState extends State<EventsScreen> {
                                     Text("Time: $time"),
                                     Text("Remaining tickets: $remainingTickets"),
                                     Text("Starting price: ${startingPrice.toStringAsFixed(2)} €"),
+                                    
+                                    if (widget.bestRated && event.averageRating != null) 
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: Row(
+                                          children: [
+                                            const Icon(Icons.star, color: Colors.yellow, size: 20),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              event.averageRating!.toStringAsFixed(1),
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),
+
                             ],
                           ),
                         ),

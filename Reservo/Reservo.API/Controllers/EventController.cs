@@ -31,6 +31,21 @@ namespace Reservo.API.Controllers
             return await (_service as IEventService).Get(search);
         }
 
+        [HttpGet("GetByRating")]
+        public async Task<ActionResult<List<EventGetDTO>>> GetByRating()
+        {
+            try
+            {
+                var result = await (_service as IEventService).GetByRating();
+                return Ok(result);
+            }
+            catch (UserException ex)
+            {
+
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpPost("Insert")]
         public async Task<EventGetDTO> Insert([FromBody] EventInsertDTO request)
         {

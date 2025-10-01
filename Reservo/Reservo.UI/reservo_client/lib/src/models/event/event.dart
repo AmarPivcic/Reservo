@@ -19,6 +19,7 @@ class Event {
   int cityId;
   String? image;
   List<TicketType> ticketTypes;
+  double? averageRating;
 
   Event({
     required this.id,
@@ -34,6 +35,7 @@ class Event {
     this.venueName,
     this.cityName,
     this.image,
+    this.averageRating,
     required this.ticketTypes
   });
 

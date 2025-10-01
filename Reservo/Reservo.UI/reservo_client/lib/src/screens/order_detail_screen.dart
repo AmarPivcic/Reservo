@@ -172,9 +172,9 @@ Future<void> _deleteReview(int reviewId) async {
   }
 
   Widget _buildReviewSection(OrderDetails order) {
-    if (order.state.toLowerCase() != "completed") {
-      return const SizedBox.shrink();
-    }
+    // if (order.state.toLowerCase() != "completed") {
+    //   return const SizedBox.shrink();
+    // }
 
   if (_orderReview != null && _orderReview!.rating != null) {
     return SizedBox(

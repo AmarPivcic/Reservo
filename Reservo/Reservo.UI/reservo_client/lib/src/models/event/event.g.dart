@@ -20,6 +20,7 @@ Event _$EventFromJson(Map<String, dynamic> json) => Event(
       venueName: json['venueName'] as String?,
       cityName: json['cityName'] as String?,
       image: json['image'] as String?,
+      averageRating: json['averageRating'] as double?,
       ticketTypes: (json['ticketTypes'] as List<dynamic>)
           .map((e) => TicketType.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -39,5 +40,6 @@ Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
       'cityName': instance.cityName,
       'cityId': instance.cityId,
       'image': instance.image,
+      'averageRating': instance.averageRating,
       'ticketTypes': instance.ticketTypes,
     };

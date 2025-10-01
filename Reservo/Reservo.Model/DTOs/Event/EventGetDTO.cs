@@ -25,5 +25,6 @@ namespace Reservo.Model.DTOs.Event
         public int CityId { get; set; }
         public string CityName { get; set; }
         public List<TicketTypeGetDTO> TicketTypes { get; set; } = new();
+        public double? AverageRating { get; set; }
     }
 }

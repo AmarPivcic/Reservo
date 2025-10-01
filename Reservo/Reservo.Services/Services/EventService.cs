@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -31,6 +32,30 @@ namespace Reservo.Services.Services
 
             return await state.Insert(request);
         }
+
+        public async Task<List<EventGetDTO>> GetByRating()
+        {
+            var now = DateTime.Now;
+
+            var events = await _context.Events
+                .Include(e => e.Category)
+                .Include(e => e.Venue)
+                .ThenInclude(v => v.City)
+                .Include(e => e.User)
+                .ThenInclude(u => u.ReviewsReceived)
+                .Where(e => e.StartDate > now && e.State=="active")
+                .ToListAsync();
+
+            if (events.Count == 0)
+                throw new UserException("There are no upcoming events");
+
+            var topEvents = _mapper.Map<List<EventGetDTO>>(events)
+                .OrderByDescending(x => x.AverageRating ?? 0)
+                .ToList();
+
+            return topEvents;
+        }
+
 
         public async Task<EventGetDTO> Activate(int id)
         {

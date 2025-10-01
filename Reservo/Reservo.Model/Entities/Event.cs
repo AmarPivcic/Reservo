@@ -24,7 +24,7 @@ namespace Reservo.Model.Entities
         public Venue Venue { get; set; }
         [ForeignKey(nameof(User))]
         public int OrganizerId { get; set; }
-        public User User { get; set; }
+        public Organizer User { get; set; }
 
         public ICollection<TicketType> TicketTypes { get; set; } = new List<TicketType>();
         public ICollection<Review> Reviews { get; set; }

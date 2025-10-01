@@ -11,7 +11,7 @@ namespace Reservo.Services.Mapping
 {
     public class UserProfile : Profile
     {
-        public UserProfile() 
+        public UserProfile()
         {
 
             CreateMap<UserInsertDTO, User>()
@@ -22,6 +22,13 @@ namespace Reservo.Services.Mapping
                     src.RoleId == 2 ? new Client() :
                     src.RoleId == 3 ? new Organizer() :
                     new User());
+
+            CreateMap<UserInsertDTO, Client>()
+                .IncludeBase<UserInsertDTO, User>();
+
+            CreateMap<UserInsertDTO, Organizer>()
+                .IncludeBase<UserInsertDTO, User>();
+
             CreateMap<UserUpdateDTO, User>()
                 .ForMember(dest => dest.Username, opt => opt.Ignore())
                 .ForMember(dest => dest.City, opt => opt.Ignore())
