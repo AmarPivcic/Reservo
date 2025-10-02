@@ -17,5 +17,8 @@ namespace Reservo.Services.Interfaces
         Task UpdateImageByToken(UserUpdateImageDTO request);
         Task ChangeActiveStatus(int id);
         Task<UserGetDTO> GetCurrentUser(int id);
+        Task<float[]?> GetUserProfileVector(int userId);
+        Task UpdateUserProfileVector(int userId, float[] vector);
+
     }
 }

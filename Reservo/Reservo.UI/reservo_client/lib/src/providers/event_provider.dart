@@ -74,21 +74,14 @@ class EventProvider extends BaseProvider<Event, Event>
   Future<void> getRatedEvents() async {
     isLoading = true;
     notifyListeners();
-
     try {
       final response = await http.get(        
         Uri.parse('${BaseProvider.baseUrl}/Event/GetByRating'),
         headers: await createHeaders()
         );
-
-
       if (response.statusCode == 200) {
-
         final List<dynamic> data = json.decode(response.body);
-
         events = data.map((eventJson) => Event.fromJson(eventJson)).toList();
-
-
         countOfEvents = events.length;
       } else {
         events = [];
@@ -100,6 +93,50 @@ class EventProvider extends BaseProvider<Event, Event>
     } finally {
       isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> getRecommended() async {
+    isLoading = true;
+    notifyListeners();
+    print("HIT REC");
+    try {
+      final response = await http.get(        
+        Uri.parse('${BaseProvider.baseUrl}/Event/GetRecommended'),
+        headers: await createHeaders()
+        );
+        print(response.body);
+        print(response.statusCode);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        events = data.map((eventJson) => Event.fromJson(eventJson)).toList();
+        countOfEvents = events.length;
+      } else {
+        events = [];
+        countOfEvents = 0;
+      }
+    } catch (e) {
+      events = [];
+      countOfEvents = 0;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateProfile(int eventId) async {
+    try {
+      final response = await http.post(        
+        Uri.parse('${BaseProvider.baseUrl}/Event/UpdateProfile/$eventId'),
+        headers: await createHeaders()
+        );
+      if (response.statusCode == 200) {
+        print("Profile updated");
+      } else {
+        print("Profile update failed");
+      }
+    } catch (e) {
+      print(e.toString());
     }
   }
 }

@@ -10,7 +10,8 @@ import 'package:reservo_client/src/screens/master_screen.dart';
 class EventsScreen extends StatefulWidget {
   final Category? categoryData;
   final bool bestRated;
-  const EventsScreen({super.key, this.categoryData, this.bestRated = false});
+  final bool recommend;
+  const EventsScreen({super.key, this.categoryData, this.bestRated = false, this.recommend = false});
 
   @override
   State<EventsScreen> createState() => _EventsScreenState();
@@ -30,6 +31,8 @@ class _EventsScreenState extends State<EventsScreen> {
       
       if (widget.bestRated) {
         ep.getRatedEvents();
+      } else if (widget.recommend) {
+        ep.getRecommended();
       } else if (widget.categoryData != null) {
         ep.getEvents(categoryId: widget.categoryData!.id);
       }
@@ -160,7 +163,7 @@ class _EventsScreenState extends State<EventsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  widget.bestRated ? "Best rated" : widget.categoryData?.name ?? "",
+                  widget.recommend ? "Recommended" : (widget.bestRated ? "Best rated" : widget.categoryData?.name ?? ""),
                   style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
                 IconButton(

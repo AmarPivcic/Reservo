@@ -48,6 +48,11 @@ builder.Services.AddTransient<IOrderService, OrderService>();
 builder.Services.AddTransient<IStripeService, StripeService>();
 builder.Services.AddTransient<IReviewService, Reservo.Services.Services.ReviewService>();
 builder.Services.AddTransient<IVenueRequestService, VenueRequestService>();
+builder.Services.AddScoped<IEventVectorService, EventVectorService>();
+builder.Services.AddScoped<RecommendationService>();
+builder.Services.AddScoped<EventVectorizerService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+
 
 builder.Services.AddTransient<BaseEventState>();
 builder.Services.AddTransient<InitialEventState>();

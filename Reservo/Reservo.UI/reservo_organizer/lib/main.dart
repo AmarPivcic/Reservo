@@ -5,6 +5,7 @@ import 'package:reservo_organizer/src/providers/auth_provider.dart';
 import 'package:reservo_organizer/src/providers/category_provider.dart';
 import 'package:reservo_organizer/src/providers/city_provider.dart';
 import 'package:reservo_organizer/src/providers/event_provider.dart';
+import 'package:reservo_organizer/src/providers/report_provider.dart';
 import 'package:reservo_organizer/src/providers/review_provider.dart';
 import 'package:reservo_organizer/src/providers/ticket_type_provider.dart';
 import 'package:reservo_organizer/src/providers/user_provider.dart';
@@ -50,7 +51,9 @@ void main() async{
         ChangeNotifierProvider(create: (_) => VenueProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => TicketTypeProvider()),
-        ChangeNotifierProvider(create: (_) => ReviewProvider())
+        ChangeNotifierProvider(create: (_) => ReviewProvider()),
+        ChangeNotifierProvider(create: (_) => ReportProvider())
+
       ],
       child:  const MyApp(),
     ),

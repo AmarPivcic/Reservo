@@ -11,6 +11,7 @@ import 'package:reservo_organizer/src/screens/home_screen.dart';
 import 'package:reservo_organizer/src/screens/master_screen.dart';
 import 'package:reservo_organizer/src/screens/new_event_screen.dart';
 import 'package:reservo_organizer/src/screens/previous_events_screen.dart';
+import 'package:reservo_organizer/src/screens/report_screen.dart';
 import '../models/event/event.dart';
 
 class EventListScreen  extends StatefulWidget {
@@ -119,6 +120,16 @@ void _clearFilters() {
           icon: const Icon(Icons.drafts, color: Colors.white),
           label: const Text("Draft Events", style: TextStyle(color: Colors.white)),
         ),
+        TextButton.icon(
+          onPressed: () {
+            Navigator.push(
+              context, 
+              MaterialPageRoute( builder: (_) => const ReportScreen())
+            );
+          },
+          icon: const Icon(Icons.auto_graph_rounded, color: Colors.white),
+          label: const Text("Reports", style: TextStyle(color: Colors.white)),
+        ),
       ],
       child: Consumer<EventProvider>(
         builder: (context, ep, _) {
@@ -152,7 +163,7 @@ void _clearFilters() {
                                   widget.title,
                                   style: Theme.of(context).textTheme.headline6,
                                 ),
-                                const SizedBox(height: 16), // spacing between title and grid
+                                const SizedBox(height: 16),
                                 Expanded(
                                   child: _EventGrid(events: ep.events, state: widget.state,),
                                 ),

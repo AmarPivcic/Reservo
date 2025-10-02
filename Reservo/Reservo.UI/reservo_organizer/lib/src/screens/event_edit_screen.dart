@@ -336,7 +336,7 @@ Future<void> _saveChanges() async {
 
   try {
     await ep.updateEvent(widget.eventData.id, dto);
-
+    await ep.trainEventVectors();
     await showDialog(
       context: context, 
       builder: (_) => AlertDialog(

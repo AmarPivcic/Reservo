@@ -43,17 +43,24 @@ namespace Reservo.Services.Services
                 .ThenInclude(v => v.City)
                 .Include(e => e.User)
                 .ThenInclude(u => u.ReviewsReceived)
-                .Where(e => e.StartDate > now && e.State=="active")
+                .Where(e => e.StartDate > now && e.State == "active")
+                .Where(e => e.User.ReviewsReceived.Any())
                 .ToListAsync();
 
             if (events.Count == 0)
-                throw new UserException("There are no upcoming events");
+                throw new UserException("There are no rated events");
 
             var topEvents = _mapper.Map<List<EventGetDTO>>(events)
                 .OrderByDescending(x => x.AverageRating ?? 0)
                 .ToList();
 
             return topEvents;
+        }
+
+        public async Task<List<Event>> GetAllEvents()
+        {
+            var events = await _context.Events.ToListAsync();
+            return events;
         }
 
 
@@ -235,5 +242,7 @@ namespace Reservo.Services.Services
 
             return query;
         }
+
+       
     }
 }

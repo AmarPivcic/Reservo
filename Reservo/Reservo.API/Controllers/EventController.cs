@@ -5,6 +5,7 @@ using Reservo.Model.Entities;
 using Reservo.Model.SearchObjects;
 using Reservo.Model.Utilities;
 using Reservo.Services.Interfaces;
+using Reservo.Services.Services;
 using System.Security.Claims;
 
 namespace Reservo.API.Controllers
@@ -12,9 +13,13 @@ namespace Reservo.API.Controllers
     [ApiController]
     public class EventController : BaseController<Event, EventGetDTO, EventInsertDTO, EventUpdateDTO, EventSearchObject>
     {
+        private readonly RecommendationService _recommendationService;
+        private readonly EventVectorizerService _vectorizerService;
 
-        public EventController(IEventService service, ILogger<BaseController<Event, EventGetDTO, EventInsertDTO,EventUpdateDTO,EventSearchObject>> logger) : base(service, logger)
+        public EventController(IEventService service, RecommendationService recommendationService, EventVectorizerService vectorizerService, ILogger<BaseController<Event, EventGetDTO, EventInsertDTO,EventUpdateDTO,EventSearchObject>> logger) : base(service, logger)
         {
+            _vectorizerService = vectorizerService;
+            _recommendationService = recommendationService;
         }
 
         [HttpGet("GetByToken")]
@@ -31,6 +36,46 @@ namespace Reservo.API.Controllers
             return await (_service as IEventService).Get(search);
         }
 
+        [HttpPost("TrainEventVectors")]
+        public async Task<IActionResult> TrainEventVectors()
+        {
+            await _vectorizerService.TrainAndStoreEventVectors();
+            return Ok("Event vectors trained and stored successfully");
+        }
+
+        [HttpGet("GetRecommended")]
+        public async Task<IActionResult> GetRecommendations(int topN = 5)
+        {
+            int userid;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+            {
+                userid = userId;
+                var recommendations = await _recommendationService.GetRecommendedEvents(userid, topN);
+                return Ok(recommendations);
+            }
+            return BadRequest(new { message = "User not found!" });
+        }
+
+
+        [HttpPost("UpdateProfile/{eventId}")]
+        public async Task<IActionResult> UpdateProfile(int eventId)
+        {
+            var evVector = await _recommendationService.GetEventVector(eventId);
+            if (evVector == null || evVector.Vector.Length == 0)
+                return NotFound("Event vector not found");
+
+            int userid;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+            {
+                userid = userId;
+                await _recommendationService.UpdateUserProfile(userId, evVector.Vector);
+                return Ok();
+            }
+            return BadRequest(new { message = "Error updating profile"});
+        }
+
         [HttpGet("GetByRating")]
         public async Task<ActionResult<List<EventGetDTO>>> GetByRating()
         {
@@ -41,7 +86,6 @@ namespace Reservo.API.Controllers
             }
             catch (UserException ex)
             {
-
                 return BadRequest(new { message = ex.Message });
             }
         }

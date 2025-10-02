@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:reservo_client/src/models/event/event.dart';
 import 'package:reservo_client/src/models/ticket_type/ticket_type.dart';
+import 'package:reservo_client/src/providers/event_provider.dart';
 import 'package:reservo_client/src/providers/ticket_type_provider.dart';
 import 'package:reservo_client/src/screens/buy_tickets_screen.dart';
 import 'package:reservo_client/src/screens/master_screen.dart';
@@ -22,6 +23,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      final ep = context.read<EventProvider>();
+      ep.updateProfile(widget.eventData.id);
+    });
     _fetchTickets();
   }
 

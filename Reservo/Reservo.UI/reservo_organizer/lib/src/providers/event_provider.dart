@@ -78,6 +78,25 @@ class EventProvider extends BaseProvider<Event, EventInsertUpdate>
     );
   }
 
+  Future<void> trainEventVectors() async {
+    try {
+      final response = await http.post(
+        Uri.parse('${BaseProvider.baseUrl}/Event/TrainEventVectors'),
+        headers: await createHeaders(),
+      );
+
+      if(response.statusCode == 200) {
+        print("Training complete!");
+      }
+
+      else {
+        print("Training failed!");
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
   Future<Event> setEventActive(int eventId) async {
     try {
       final response = await http.patch(

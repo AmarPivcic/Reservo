@@ -120,6 +120,8 @@ void _saveEvent() async {
   newEvent.venueName = _venueName;
   newEvent.cityId = _cityId!;
 
+  await ep.trainEventVectors();
+
   Navigator.push(
     context, 
     MaterialPageRoute(

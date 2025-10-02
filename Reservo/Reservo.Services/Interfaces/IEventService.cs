@@ -18,5 +18,7 @@ namespace Reservo.Services.Interfaces
         Task<EventGetDTO> Draft(int id);
         Task CompleteExpiredEventsAsync();
         Task<List<EventGetDTO>> GetByRating();
+        Task<List<Event>> GetAllEvents();
+
     }
 }

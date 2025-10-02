@@ -649,3 +649,4 @@ FodyWeavers.xsd
 Reservo.API/Migrations
 *.env
 .env
+Reservo.API/event_vectorizer.zip

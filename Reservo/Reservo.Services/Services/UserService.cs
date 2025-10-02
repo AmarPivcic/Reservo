@@ -21,6 +21,37 @@ namespace Reservo.Services.Services
             _logger = logger;
         }
 
+        public async Task<float[]?> GetUserProfileVector(int userId)
+        {
+            var profile = await _context.UserProfiles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(up => up.UserId == userId);
+
+            return profile?.Vector;
+        }
+
+        public async Task UpdateUserProfileVector(int userId, float[] vector)
+        {
+            var profile = await _context.UserProfiles
+                .FirstOrDefaultAsync(up => up.UserId == userId);
+
+            if (profile == null)
+            {
+                profile = new UserProfile
+                {
+                    UserId = userId,
+                    Vector = vector
+                };
+                await _context.UserProfiles.AddAsync(profile);
+            }
+            else
+            {
+                profile.Vector = vector;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
         public override IQueryable<User> AddInclude(IQueryable<User> query, UserSearchObject? search = null)
         {
             query = query.Include("Role");

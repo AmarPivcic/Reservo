@@ -29,6 +29,8 @@ namespace Reservo.Services.Database
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<TicketType> TicketTypes { get; set; }
         public DbSet<Venue> Venues { get; set; }
+        public DbSet<UserProfile> UserProfiles { get; set; }
+        public DbSet<EventVector> EventVectors { get; set; }
         public DbSet<VenueCategory> VenueCategories { get; set; }
         public DbSet<VenueRequest> VenueRequests { get; set; }
 
@@ -132,6 +134,18 @@ namespace Reservo.Services.Database
                     .HasForeignKey(r => r.OrganizerId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+
+            modelBuilder.Entity<UserProfile>()
+                .HasOne(up => up.User)
+                .WithOne() 
+                .HasForeignKey<UserProfile>(up => up.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<EventVector>()
+                .HasOne(ev => ev.Event)
+                .WithOne()
+                .HasForeignKey<EventVector>(ev => ev.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<User>()
                 .HasDiscriminator<string>("Discriminator")

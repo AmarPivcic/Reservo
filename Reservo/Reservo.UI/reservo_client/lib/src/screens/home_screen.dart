@@ -54,11 +54,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () {
-                        // Navigate to best rated events screen
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => EventsScreen(bestRated: true,),
+                            builder: (_) => EventsScreen(recommend: false, bestRated: true),
                           ),
                         );
                       },
@@ -89,6 +88,49 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  width: double.infinity,
+                  child: Material(
+                    color: Colors.grey[800],
+                    borderRadius: BorderRadius.circular(12),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EventsScreen(recommend: true, bestRated: false),
+                          ),
+                        );
+                      },
+                      child: const Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.recommend, color: Colors.white, size: 40),
+                                SizedBox(width: 12),
+                                Text(
+                                  "Recommended",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              ],
+                            ),
+                            Icon(Icons.arrow_forward_ios,
+                                size: 16, color: Colors.white),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
     ...categoryProvider.categories.map((category) {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
@@ -102,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) =>  EventsScreen(categoryData: category, bestRated: false),
+                  builder: (_) =>  EventsScreen(categoryData: category, bestRated: false, recommend: false),
                 ),
               );
             },

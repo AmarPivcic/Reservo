@@ -12,6 +12,7 @@ import 'package:reservo_organizer/src/providers/city_provider.dart';
 import 'package:reservo_organizer/src/providers/user_provider.dart';
 import 'package:reservo_organizer/src/screens/login_screen.dart';
 import 'package:reservo_organizer/src/screens/master_screen.dart';
+import 'package:reservo_organizer/src/screens/report_screen.dart';
 
 class EditAccountScreen extends StatefulWidget {
   const EditAccountScreen({super.key});
