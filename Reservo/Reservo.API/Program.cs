@@ -52,6 +52,7 @@ builder.Services.AddScoped<IEventVectorService, EventVectorService>();
 builder.Services.AddScoped<RecommendationService>();
 builder.Services.AddScoped<EventVectorizerService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<ITicketService, TicketService>();
 
 
 builder.Services.AddTransient<BaseEventState>();
