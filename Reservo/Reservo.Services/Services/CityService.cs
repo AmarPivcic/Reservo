@@ -34,5 +34,39 @@ namespace Reservo.Services.Services
                 Result = mapped
             };
         }
+
+        public async Task<PagedResult<CityGetDTO>> GetAllCities()
+        {
+            var list = await _context.Cities.ToListAsync();
+            var mapped = _mapper.Map<List<CityGetDTO>>(list);
+
+            return new PagedResult<CityGetDTO>
+            {
+                Count = mapped.Count,
+                Result = mapped
+            };
+        }
+
+        public override async Task<string> Delete(int id)
+        {
+            var city = await _context.Cities
+            .Include(c => c.Venues)
+            .Include(c => c.Users)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (city == null)
+                return "City not found.";
+
+            if (city.Venues.Any())
+                return "Cannot delete city: it has related venues.";
+
+            if (city.Users.Any())
+                return "Cannot delete city: it has related users.";
+
+            _context.Cities.Remove(city);
+            await _context.SaveChangesAsync();
+
+            return "OK";
+        }
     }
 }

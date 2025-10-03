@@ -106,6 +106,8 @@ namespace Reservo.Services.Database
                 .HasForeignKey(e => e.OrganizerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+         
+
             modelBuilder.Entity<Review>(entity =>
             {
                 entity.HasKey(r => r.Id);
@@ -160,6 +162,33 @@ namespace Reservo.Services.Database
                 .WithMany()
                 .HasForeignKey(vr => vr.OrganizerId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Venue>()
+                .HasOne(v => v.City)
+                .WithMany(c => c.Venues)
+                .HasForeignKey(v => v.CityId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.City)
+                .WithMany(c => c.Users)
+                .HasForeignKey(u => u.CityId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            modelBuilder.Entity<Event>()
+                 .HasOne(e => e.Category)
+                 .WithMany(c => c.Events)
+                 .HasForeignKey(e => e.CategoryId)
+                 .OnDelete(DeleteBehavior.Restrict);
+            
+            modelBuilder.Entity<Event>()
+                .HasOne(e => e.Venue)
+                .WithMany(v => v.Events)
+                .HasForeignKey(e => e.VenueId)
+                .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }

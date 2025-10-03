@@ -18,7 +18,10 @@ namespace Reservo.Services.Mapping
             CreateMap<VenueGetDTO, Venue>();
 
             CreateMap<Venue, VenueGetDTO>()
-                .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City.Name));
+                .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City.Name))
+                .ForMember(dest => dest.Categories, opt => opt.MapFrom(src =>
+                    src.AllowedCategories.Select(ac => ac.Category)));
+
             CreateMap<Venue, VenueUpdateDTO>();
             CreateMap<Venue, VenueInsertDTO>();
         }

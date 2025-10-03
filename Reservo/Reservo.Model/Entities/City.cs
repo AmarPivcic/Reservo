@@ -11,5 +11,6 @@ namespace Reservo.Model.Entities
         public int Id { get; set; }
         public string Name { get; set; }
         public ICollection<Venue> Venues { get; set; }
+        public ICollection<User> Users { get; set; }
     }
 }

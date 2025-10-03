@@ -14,5 +14,6 @@ namespace Reservo.Model.DTOs.Venue
         public int Capacity { get; set; }
         public string? Description { get; set; }
         public int CityId { get; set; }
+        public List<int> CategoryIds { get; set; } = new List<int>();
     }
 }

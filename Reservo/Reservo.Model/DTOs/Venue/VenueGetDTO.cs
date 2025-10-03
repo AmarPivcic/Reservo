@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Reservo.Model.DTOs.Category;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -15,5 +16,6 @@ namespace Reservo.Model.DTOs.Venue
         public int Capacity { get; set; }
         public string? Description { get; set; }
         public string CityName { get; set; }
+        public List<CategoryGetDTO> Categories { get; set; } = new();
     }
 }

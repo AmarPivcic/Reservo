@@ -19,6 +19,8 @@ namespace Reservo.Model.Entities
         public City City { get; set; }
 
         public ICollection<VenueCategory> AllowedCategories { get; set; } = new List<VenueCategory>();
+        public ICollection<Event> Events { get; set; }
+
 
     }
 }
