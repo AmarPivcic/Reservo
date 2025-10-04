@@ -19,6 +19,6 @@ namespace Reservo.Services.Interfaces
         Task<UserGetDTO> GetCurrentUser(int id);
         Task<float[]?> GetUserProfileVector(int userId);
         Task UpdateUserProfileVector(int userId, float[] vector);
-
+        Task ActivateOrganizer(int id);
     }
 }

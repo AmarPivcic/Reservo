@@ -145,10 +145,11 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
     }
   }
 
-  Future<void> delete(int id) async {
+   Future<void> delete({required int id, String customEndpoint = ''}) async {
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl/$endpoint/$id'),
+        Uri.parse(
+            '$baseUrl/$endpoint${customEndpoint.isNotEmpty ? '/$customEndpoint' : ''}/$id'),
         headers: await createHeaders(),
       );
       if (response.statusCode == 200) {
@@ -163,6 +164,7 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
           "Can't reach the server. Please check your internet connection.");
     }
   }
+
 
   void handleHttpError(http.Response response) {
     if (response.statusCode != 200) {

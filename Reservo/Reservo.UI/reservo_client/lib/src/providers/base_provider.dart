@@ -94,25 +94,12 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
   required T Function(Map<String, dynamic>) fromJson,
 }) async {
   try {
-    final jsonBody = jsonEncode(toJson(item));
-    // ignore: avoid_print
-    print("Sending JSON: $jsonBody");
-     final uri = Uri.parse('$baseUrl/$endpoint${customEndpoint.isNotEmpty ? '/$customEndpoint' : ''}');
-      // ignore: avoid_print
-      print(uri.toString());
     final response = await http.post(
       Uri.parse(
           '$baseUrl/$endpoint${customEndpoint.isNotEmpty ? '/$customEndpoint' : ''}'),
       headers: await createHeaders(),
       body: jsonEncode(toJson(item)),
     );
-
-    // ignore: avoid_print
-    print(response.statusCode);
-    // ignore: avoid_print
-
-    print(response.body); 
-
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -156,10 +143,11 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
     }
   }
 
-  Future<void> delete(int id) async {
+   Future<void> delete({required int id, String customEndpoint = ''}) async {
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl/$endpoint/$id'),
+        Uri.parse(
+            '$baseUrl/$endpoint${customEndpoint.isNotEmpty ? '/$customEndpoint' : ''}/$id'),
         headers: await createHeaders(),
       );
       if (response.statusCode == 200) {

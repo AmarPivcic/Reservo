@@ -35,7 +35,6 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
           filter != null ? Uri(queryParameters: filter).query : '';
       String url =
           '$baseUrl/$endpoint${customEndpoint.isNotEmpty ? '/$customEndpoint' : ''}${queryString.isNotEmpty ? '?$queryString' : ''}';
-
       final response = await http.get(
         Uri.parse(url),
         headers: await createHeaders(),

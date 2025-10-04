@@ -78,5 +78,14 @@ class OrderProvider extends BaseProvider<Order, OrderInsert>
 
     return response.statusCode == 200;
   }
+
+  Future<String> deletOrder(int orderId) async {
+    try {
+      await delete(id: orderId, customEndpoint: 'DeleteOrder');
+      return "OK";
+    } catch (e) {
+      return e.toString();
+    }
+  }
 }
 

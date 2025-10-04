@@ -196,7 +196,12 @@ Future<void> _activateEvent() async{
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-
+                    OutlinedButton(
+                      onPressed: () => {
+                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const HomeScreen()), (route) => false)
+                      },
+                      child: const Text("Close"),
+                    ),
                     OutlinedButton(
                       onPressed: _editEvent,
                       child: const Text("Edit"),

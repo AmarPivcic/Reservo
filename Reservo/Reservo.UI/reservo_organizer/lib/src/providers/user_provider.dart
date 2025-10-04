@@ -83,4 +83,13 @@ class UserProvider extends BaseProvider<User, User>
       throw CustomException("$e");
     }
   }
+
+  Future<String> deleteUser(int userId) async {
+    try {
+      await delete(id: userId, customEndpoint: 'DeleteUser');
+      return "OK";
+    } catch (e) {
+      return e.toString();
+    }
+  }
 }

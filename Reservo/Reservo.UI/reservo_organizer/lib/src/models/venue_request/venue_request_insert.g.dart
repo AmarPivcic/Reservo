@@ -13,7 +13,9 @@ VenueRequestInsert _$VenueRequestInsertFromJson(Map<String, dynamic> json) =>
       address: json['address'] as String,
       capacity: (json['capacity'] as num).toInt(),
       description: json['description'] as String?,
-      allowedCategories: json['allowedCategories'] as String,
+      suggestedCategories: json['suggestedCategories'] as String?,
+      allowedCategoryIds: (json['allowedCategoryIds'] as List<dynamic>).map((e) => e as int).toList(),
+
     );
 
 Map<String, dynamic> _$VenueRequestInsertToJson(VenueRequestInsert instance) =>
@@ -23,5 +25,6 @@ Map<String, dynamic> _$VenueRequestInsertToJson(VenueRequestInsert instance) =>
       'address': instance.address,
       'capacity': instance.capacity,
       'description': instance.description,
-      'allowedCategories': instance.allowedCategories,
+      'suggestedCategories': instance.suggestedCategories,
+      'allowedCategoryIds': instance.allowedCategoryIds,
     };

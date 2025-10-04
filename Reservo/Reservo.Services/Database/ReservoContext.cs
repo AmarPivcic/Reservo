@@ -33,6 +33,7 @@ namespace Reservo.Services.Database
         public DbSet<EventVector> EventVectors { get; set; }
         public DbSet<VenueCategory> VenueCategories { get; set; }
         public DbSet<VenueRequest> VenueRequests { get; set; }
+        public DbSet<VenueRequestCategory> VenueRequestCategories { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -80,13 +81,13 @@ namespace Reservo.Services.Database
                 .HasOne(od => od.TicketType)
                 .WithMany(tt => tt.OrderDetails)
                 .HasForeignKey(od => od.TicketTypeId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Order>()
                 .HasMany(o => o.OrderDetails)
                 .WithOne(od => od.Order)
                 .HasForeignKey(od => od.OrderId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Ticket>()
                 .HasOne(t => t.OrderDetail)
@@ -106,7 +107,7 @@ namespace Reservo.Services.Database
                 .HasForeignKey(e => e.OrganizerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-         
+
 
             modelBuilder.Entity<Review>(entity =>
             {
@@ -139,7 +140,7 @@ namespace Reservo.Services.Database
 
             modelBuilder.Entity<UserProfile>()
                 .HasOne(up => up.User)
-                .WithOne() 
+                .WithOne()
                 .HasForeignKey<UserProfile>(up => up.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -182,13 +183,37 @@ namespace Reservo.Services.Database
                  .WithMany(c => c.Events)
                  .HasForeignKey(e => e.CategoryId)
                  .OnDelete(DeleteBehavior.Restrict);
-            
+
             modelBuilder.Entity<Event>()
                 .HasOne(e => e.Venue)
                 .WithMany(v => v.Events)
                 .HasForeignKey(e => e.VenueId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<VenueRequestCategory>()
+                .HasKey(vc => new { vc.VenueRequestId, vc.CategoryId });
+
+            modelBuilder.Entity<VenueRequestCategory>()
+                .HasOne(vc => vc.VenueRequest)
+                .WithMany(v => v.VenueRequestCategories)
+                .HasForeignKey(vc => vc.VenueRequestId);
+
+            modelBuilder.Entity<VenueRequestCategory>()
+                .HasOne(vc => vc.Category)
+                .WithMany(c => c.VenueRequestCategories)
+                .HasForeignKey(vc => vc.CategoryId);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.User as Client)
+                .WithMany(u => u.Orders)
+                .HasForeignKey(o => o.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Event>()
+                .HasOne(e => e.User as Organizer)
+                .WithMany(u => u.OrganizedEvents)
+                .HasForeignKey(e => e.OrganizerId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

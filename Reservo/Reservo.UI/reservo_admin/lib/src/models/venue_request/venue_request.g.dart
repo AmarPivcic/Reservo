@@ -14,9 +14,11 @@ VenueRequest _$VenueRequestFromJson(Map<String, dynamic> json) => VenueRequest(
       address: json['address'] as String,
       capacity: (json['capacity'] as num).toInt(),
       description: json['description'] as String?,
-      allowedCategories: json['allowedCategories'] as String,
+      suggestedCategories: json['suggestedCategories'] as String?,
       state: json['state'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      allowedCategoryIds: (json['allowedCategoryIds'] as List<dynamic>).map((e) => e as int).toList(),
+
     );
 
 Map<String, dynamic> _$VenueRequestToJson(VenueRequest instance) =>
@@ -28,7 +30,8 @@ Map<String, dynamic> _$VenueRequestToJson(VenueRequest instance) =>
       'address': instance.address,
       'capacity': instance.capacity,
       'description': instance.description,
-      'allowedCategories': instance.allowedCategories,
+      'suggestedCategories': instance.suggestedCategories,
+      'allowedCategoryIds': instance.allowedCategoryIds,
       'state': instance.state,
       'createdAt': instance.createdAt.toIso8601String(),
     };

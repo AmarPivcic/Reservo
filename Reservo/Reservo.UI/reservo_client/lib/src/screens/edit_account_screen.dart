@@ -273,6 +273,46 @@ void dispose() {
     );
   }
 
+  Future<void> _showDeleteDialog(int userId) async {
+    final authProvider = context.read<AuthProvider>();
+    showDialog(
+      context: context, 
+      builder: (ctx) => AlertDialog(
+        title: const Text("Delete account"),
+        content: const Text("Are you sure you want to delete this account?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Close"),
+          ),
+          TextButton(
+            onPressed: () async {
+              final provider = Provider.of<UserProvider>(context, listen: false);
+              final result = await provider.deleteUser(userId);
+              if (result == "OK") {
+                authProvider.logout();
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Account deleted!")),
+                  );
+                if (context.mounted) Navigator.of(ctx).pop();
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()),(route) => false);
+              } else {
+                if (context.mounted) {
+                  Navigator.of(ctx).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(result)),
+                  );
+                  print(result);
+                }
+              }
+            },
+            child: const Text("Delete"),
+          )
+        ],
+      )
+    );
+  }
+
   @override
     Widget build(BuildContext context) {
     final cityProvider = context.watch<CityProvider>();
@@ -415,6 +455,12 @@ void dispose() {
                       onPressed: _logout,
                       icon: const Icon(Icons.logout, color: Colors.white),
                       label: const Text("Logout", style: TextStyle(color: Colors.white)),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton.icon(
+                      onPressed: () => {_showDeleteDialog(user!.id)},
+                      icon: const Icon(Icons.delete, color: Colors.white),
+                      label: const Text("Delete account", style: TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),

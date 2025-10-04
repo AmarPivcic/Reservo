@@ -118,10 +118,40 @@ namespace Reservo.API.Controllers
             return await (_service as IUserService).Get(search);
         }
 
+        [HttpGet("GetActiveUsers")]
+        public async Task<PagedResult<UserGetDTO>> GetActiveUsers([FromQuery] UserSearchObject? search = null)
+        {
+            search.Active = true;
+            search.Role = "allexceptadmin";
+            return await (_service as IUserService).Get(search);
+        }
+
+        [HttpGet("GetInactiveUsers")]
+        public async Task<PagedResult<UserGetDTO>> GetInactiveUsers([FromQuery] UserSearchObject? search = null)
+        {
+            search.Active = false;
+            search.Role = "allexceptadmin";
+            return await (_service as IUserService).Get(search);
+        }
+
+        [HttpGet("GetPendingOrganizers")]
+        public async Task<PagedResult<UserGetDTO>> GetPendingOrganizers([FromQuery] UserSearchObject? search = null)
+        {
+            search.Active = false;
+            search.Role = "Organizer";
+            return await (_service as IUserService).Get(search);
+        }
+
         [HttpPut("ChangeActiveStatus")]
         public async Task ChangeActiveStatus(int id)
         {
             await (_service as IUserService).ChangeActiveStatus(id);
+        }
+
+        [HttpPut("ActivateOrganizer")]
+        public async Task ActivateOrganizer(int id)
+        {
+            await (_service as IUserService).ActivateOrganizer(id);
         }
 
         [HttpGet("GetCurrentUser")]
@@ -143,6 +173,17 @@ namespace Reservo.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
 
+        }
+
+        [HttpDelete("DeleteUser/{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var result = await (_service as IUserService).Delete(id);
+
+            if (result != "OK")
+                return BadRequest(result);
+
+            return Ok();
         }
     }
 }

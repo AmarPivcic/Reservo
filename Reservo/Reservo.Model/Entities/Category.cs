@@ -13,5 +13,6 @@ namespace Reservo.Model.Entities
         public byte[]? Image { get; set; }
         public ICollection<VenueCategory> Venues { get; set; } = new List<VenueCategory>();
         public ICollection<Event> Events;
+        public ICollection<VenueRequestCategory> VenueRequestCategories { get; set; } = new List<VenueRequestCategory>();
     }
 }

@@ -114,5 +114,16 @@ namespace Reservo.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpDelete("DeleteOrder/{id}")]
+        public async Task<IActionResult> DeleteCity(int id)
+        {
+            var result = await (_service as IOrderService).Delete(id);
+
+            if (result != "OK")
+                return BadRequest(result);
+
+            return Ok();
+        }
     }
 }

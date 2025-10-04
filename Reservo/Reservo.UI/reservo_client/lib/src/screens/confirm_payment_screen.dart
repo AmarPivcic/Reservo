@@ -3,9 +3,9 @@ import 'package:reservo_client/src/models/order/order_insert.dart';
 import 'package:reservo_client/src/models/order_details/order_details_insert.dart';
 import 'package:reservo_client/src/providers/order_provider.dart';
 import 'package:reservo_client/src/providers/ticket_type_provider.dart';
-import 'package:reservo_client/src/screens/home_screen.dart';
 import 'package:reservo_client/src/screens/master_screen.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
+import 'package:reservo_client/src/screens/orders_screen.dart';
 
 class ConfirmPaymentScreen extends StatefulWidget {
   final List<Map<String, int?>> selectedTickets;
@@ -96,7 +96,7 @@ class _ConfirmPaymentScreenState extends State<ConfirmPaymentScreen> {
           );
         }
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(builder: (_) => const OrdersScreen(ordersFilter: "active")),
         (route) => false
       );
     } on stripe.StripeException catch (e) {

@@ -11,9 +11,11 @@ class VenueRequest {
   final String address;
   final int capacity;
   final String? description;
-  final String allowedCategories;
+  final List<int> allowedCategoryIds;
+  final String suggestedCategories;
   final String state;
   final DateTime createdAt;
+
 
   VenueRequest({
     required this.id,
@@ -23,7 +25,8 @@ class VenueRequest {
     required this.address,
     required this.capacity,
     this.description,
-    required this.allowedCategories,
+    required this.suggestedCategories,
+    required this.allowedCategoryIds,
     required this.state,
     required this.createdAt,
   });

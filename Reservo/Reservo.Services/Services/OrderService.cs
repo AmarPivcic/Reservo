@@ -116,7 +116,7 @@ namespace Reservo.Services.Services
             {
                 UserEmail = order.User.Email,
                 Subject = "Order Confirmation",
-                BodyHtml = $"Thank you {order.User.Username}, your order #{order.Id} has been confirmed!"
+                BodyHtml = $"Thank you {order.User.Username}, your order #{order.Id} has been confirmed! You can check it out in 'Active Orders' section!"
             });
 
             return true;
@@ -191,7 +191,7 @@ namespace Reservo.Services.Services
 
             order.State = "cancelled";
             order.IsPaid = false;
-
+            
             foreach (var detail in order.OrderDetails)
             {
                 var ticketType = detail.TicketType;
@@ -202,6 +202,31 @@ namespace Reservo.Services.Services
             }
 
             await _context.SaveChangesAsync();
+            var orderMail = await _context.Orders
+                .Include(o => o.User)
+                .FirstOrDefaultAsync(o => o.Id == order.Id);
+
+            await _publishEndpoint.Publish(new ReservationEmailMessage
+            {
+                UserEmail = orderMail.User.Email,
+                Subject = "Order cancelled",
+                BodyHtml = $"{orderMail.User.Username}, your order #{orderMail.Id} has been cancelled! You can check it out in 'Previous Orders' section!"
+            });
+        }
+
+        public override async Task<string> Delete(int id)
+        {
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(o => o.Id == id);
+            if (order.State == "active")
+            {
+                return "Cannot delete active order, cancel it first!";
+            }
+
+            _context.Orders.Remove(order);
+            await _context.SaveChangesAsync();
+
+            return "OK";
         }
 
     }

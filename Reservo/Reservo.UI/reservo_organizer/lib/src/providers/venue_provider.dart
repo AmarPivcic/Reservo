@@ -46,9 +46,6 @@ class VenueProvider extends BaseProvider<Venue, Venue> {
       body: jsonEncode(requestData.toJson()),
     );
 
-    print("${BaseProvider.baseUrl}/VenueRequest");
-    print(response.body);
-
     if(response.statusCode == 200){
         final data = jsonDecode(response.body)as Map<String, dynamic>;
         return VenueRequest.fromJson(data);

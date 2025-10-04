@@ -8,6 +8,7 @@ namespace Reservo.Model.Entities
 {
     public class Organizer : User
     {
+        public bool IsPending { get; set; } = true;
         public ICollection<Event> OrganizedEvents { get; set; }
         public ICollection<Review> ReviewsReceived { get; set; }
 

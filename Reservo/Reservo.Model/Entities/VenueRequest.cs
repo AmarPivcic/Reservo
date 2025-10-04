@@ -14,12 +14,14 @@ namespace Reservo.Model.Entities
         public int OrganizerId { get; set; }
         public User Organizer { get; set; }
         public string VenueName { get; set; }
-        public string CityName { get; set; }   
+        public string CityName { get; set; }
         public string Address { get; set; }
         public int Capacity { get; set; }
         public string? Description { get; set; }
-        public string AllowedCategories { get; set; }
+        public ICollection<VenueRequestCategory> VenueRequestCategories { get; set; } = new List<VenueRequestCategory>();
+        public string? SuggestedCategories { get; set; }
         public string State { get; set; } = "Pending";
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
+
 }

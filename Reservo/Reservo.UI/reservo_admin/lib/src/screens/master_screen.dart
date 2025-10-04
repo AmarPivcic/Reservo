@@ -4,6 +4,9 @@ import 'package:reservo_admin/src/providers/auth_provider.dart';
 import 'package:reservo_admin/src/screens/cities_screen.dart';
 import 'package:reservo_admin/src/screens/edit_account_screen.dart';
 import 'package:reservo_admin/src/screens/home_screen.dart';
+import 'package:reservo_admin/src/screens/pending_organizers_screen.dart';
+import 'package:reservo_admin/src/screens/users_screen.dart';
+import 'package:reservo_admin/src/screens/venue_requests_screen.dart';
 import 'package:reservo_admin/src/screens/venues_screen.dart';
 
 
@@ -75,8 +78,38 @@ class MasterScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (context) => const VenuesScreen()),
                     );
                   },
-                  icon: const Icon(Icons.location_city, color: Colors.white),
+                  icon: const Icon(Icons.stadium, color: Colors.white),
                   label: const Text("Venues", style: TextStyle(color: Colors.white)),
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const VenueRequestsScreen()),
+                    );
+                  },
+                  icon: const Icon(Icons.add_location, color: Colors.white),
+                  label: const Text("Venue Requests", style: TextStyle(color: Colors.white)),
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const UsersScreen()),
+                    );
+                  },
+                  icon: const Icon(Icons.people, color: Colors.white),
+                  label: const Text("Users", style: TextStyle(color: Colors.white)),
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PendingOrganizersScreen()),
+                    );
+                  },
+                  icon: const Icon(Icons.person_add, color: Colors.white),
+                  label: const Text("Pending organizers", style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),

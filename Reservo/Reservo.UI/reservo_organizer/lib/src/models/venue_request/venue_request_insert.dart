@@ -9,7 +9,8 @@ class VenueRequestInsert {
   final String address;
   final int capacity;
   final String? description;
-  final String allowedCategories;
+  final List<int> allowedCategoryIds;
+  final String? suggestedCategories;
 
   VenueRequestInsert({
     required this.venueName,
@@ -17,7 +18,8 @@ class VenueRequestInsert {
     required this.address,
     required this.capacity,
     this.description,
-    required this.allowedCategories,
+    required this.allowedCategoryIds,
+    this.suggestedCategories,
   });
 
   factory VenueRequestInsert.fromJson(Map<String, dynamic> json) => _$VenueRequestInsertFromJson(json);

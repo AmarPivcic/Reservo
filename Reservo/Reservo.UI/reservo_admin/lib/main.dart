@@ -6,6 +6,7 @@ import 'package:reservo_admin/src/providers/category_provider.dart';
 import 'package:reservo_admin/src/providers/city_provider.dart';
 import 'package:reservo_admin/src/providers/user_provider.dart';
 import 'package:reservo_admin/src/providers/venue_provider.dart';
+import 'package:reservo_admin/src/providers/venue_request_provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() async{
@@ -45,6 +46,7 @@ void main() async{
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => VenueProvider()),
+        ChangeNotifierProvider(create: (_) => VenueRequestProvider()),
       ],
       child:  const MyApp(),
     ),

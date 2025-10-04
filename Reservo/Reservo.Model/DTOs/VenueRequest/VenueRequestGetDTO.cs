@@ -16,8 +16,10 @@ namespace Reservo.Model.DTOs.VenueRequest
         public string Address { get; set; }
         public int Capacity { get; set; }
         public string? Description { get; set; }
-        public string AllowedCategories { get; set; }
-        public string State { get; set; } = "Pending";
+        public List<int> AllowedCategoryIds { get; set; } = new();
+        public string? SuggestedCategories { get; set; }
+        public string State { get; set; }
         public DateTime CreatedAt { get; set; }
     }
+
 }

@@ -18,7 +18,12 @@ namespace Reservo.Services.Mapping
                 .ForMember(dest => dest.State, opt => opt.Ignore());
 
             CreateMap<VenueRequest, VenueRequestGetDTO>()
-                .ForMember(dest => dest.OrganizerName, opt => opt.MapFrom(src => src.Organizer.Username));
+                .ForMember(dest => dest.OrganizerName,
+                    opt => opt.MapFrom(src => src.Organizer.Username))
+                .ForMember(dest => dest.AllowedCategoryIds,
+                    opt => opt.MapFrom(src => src.VenueRequestCategories
+                    .Select(vc => vc.CategoryId)
+                .ToList()));
         }
     }
 }

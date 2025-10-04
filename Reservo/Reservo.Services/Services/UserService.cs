@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
+using MassTransit;
+using MassTransit.Transports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using ReservationEmailConsumer.Contracts;
 using Reservo.Model.DTOs.User;
 using Reservo.Model.Entities;
 using Reservo.Model.SearchObjects;
@@ -8,6 +11,7 @@ using Reservo.Model.Utilities;
 using Reservo.Services.Database;
 using Reservo.Services.Interfaces;
 using Reservo.Services.Utilities;
+using Stripe.Climate;
 using System.Security.Claims;
 
 
@@ -16,9 +20,11 @@ namespace Reservo.Services.Services
     public class UserService : BaseService<User, UserGetDTO, UserInsertDTO, UserUpdateDTO, UserSearchObject>, IUserService
     {
         ILogger<UserService> _logger;
-        public UserService(ReservoContext context, IMapper mapper, ILogger<UserService> logger) : base(context, mapper)
+        private readonly IPublishEndpoint _publishEndpoint;
+        public UserService(IPublishEndpoint publishEndpoint,ReservoContext context, IMapper mapper, ILogger<UserService> logger) : base(context, mapper)
         {
             _logger = logger;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<float[]?> GetUserProfileVector(int userId)
@@ -65,33 +71,55 @@ namespace Reservo.Services.Services
             {
                 if (search!.Role != null)
                 {
-                    if (search!.Role != "allexceptadmin")
+                    switch (search.Role)
                     {
-                        query = query.Where(u => u.Role.Name == search.Role);
-                    }
-                    else
-                    {
-                        query = query.Where(u => u.Role.Name != "admin");
+                        case "allexceptadmin":
+                            if (search.Active == true)
+                            {
+                                query = query.Where(u =>
+                                    u.Role.Name != "admin" &&
+                                    ((u is Client) || (u is Organizer ))
+                                );
+                            }
+                            else
+                            {
+                                query = query.Where(u =>
+                                    u.Role.Name != "admin" &&
+                                    ((u is Client) || (u is Organizer && !(u as Organizer).IsPending))
+                                );
+                            }
+                            break;
+
+                        case "Organizer":
+                            query = query.OfType<Organizer>().Where(o => o.IsPending);
+                            break;
+
+                        default:
+                            query = query.Where(u => u.Role.Name == search.Role);
+                            break;
                     }
                 }
 
-                if(search!.UserName != null)
+
+                if (search.UserName != null)
                 {
-                    query = query.Where (u => u.Username == search.UserName);
+                    query = query.Where(u => u.Username == search.UserName);
                 }
 
-                if (search!.ContainsUsername != null)
+                if (search.ContainsUsername != null)
                 {
                     query = query.Where(u => u.Username.Contains(search.ContainsUsername));
                 }
-
-                if (search!.Active != null)
+                if (search.Active != null)
                 {
                     query = query.Where(u => u.Active == search.Active);
                 }
             }
+
             return base.AddFilter(query, search);
         }
+
+
 
         public async Task ChangeActiveStatus(int id)
         {
@@ -108,6 +136,36 @@ namespace Reservo.Services.Services
                 foreach (var token in tokens)
                 {
                     if(token.Revoked==null)
+                    {
+                        token.Revoked = DateTime.Now;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+
+            else
+            {
+                throw new UserException("Wrong user id!");
+            }
+        }
+
+
+        public async Task ActivateOrganizer(int id)
+        {
+            var set = _context.Set<User>();
+            var entity = await set.FirstOrDefaultAsync(u => u.Id == id);
+
+            if (entity != null)
+            {
+                entity.Active = !entity.Active;
+                (entity as Organizer).IsPending = false;
+                await _context.SaveChangesAsync();
+
+                var tokens = await _context.AuthTokens.Where(t => t.UserId == entity.Id).ToListAsync();
+
+                foreach (var token in tokens)
+                {
+                    if (token.Revoked == null)
                     {
                         token.Revoked = DateTime.Now;
                         await _context.SaveChangesAsync();
@@ -216,6 +274,12 @@ namespace Reservo.Services.Services
                     entity.PasswordHash = Hashing.GenerateHash(entity.PasswordSalt, request.NewPassword);
                 }
 
+                await _publishEndpoint.Publish(new ReservationEmailMessage
+                {
+                    UserEmail = entity.Email,
+                    Subject = "Password changed",
+                    BodyHtml = $"{entity.Username}, your password has been changed! If this wasn't you, please contact our support as soon as possible!"
+                });
                 await _context.SaveChangesAsync();
             }
             else
@@ -288,7 +352,12 @@ namespace Reservo.Services.Services
 
                     entity.CityId = newCity.Id;
                 }
-                
+                await _publishEndpoint.Publish(new ReservationEmailMessage
+                {
+                    UserEmail = entity.Email,
+                    Subject = "Account created",
+                    BodyHtml = $"{entity.Username}, your account has been created! We are happy that you became a part of our community!"
+                });
                 await base.BeforeInsert(entity, request);
             }
             else
@@ -304,5 +373,62 @@ namespace Reservo.Services.Services
                 .Include(u => u.City).FirstOrDefaultAsync(u => u.Id == id);
             return _mapper.Map<UserGetDTO>(user);  
         }
+
+        public override async Task<string> Delete(int id)
+        {
+            var user = await _context.Users
+                .Include(u => (u as Client).Orders)
+                .Include(u => (u as Organizer).OrganizedEvents)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null)
+                return "User not found!";
+
+            if (user is Client client)
+            {
+                var ordersToDelete = await _context.Orders
+                    .Where(o => o.State != "active")
+                    .Include(o => o.OrderDetails)
+                    .ToListAsync();
+
+                foreach (var order in ordersToDelete)
+                {
+                    _context.OrderDetails.RemoveRange(order.OrderDetails);
+                }
+
+                _context.Orders.RemoveRange(ordersToDelete);
+            }
+
+            if (user is Organizer organizer)
+            {
+                if (organizer.OrganizedEvents.Any(e => e.State == "active" || e.State == "draft"))
+                    return "Cannot delete organizer with active events. Cancel or delete them first! (Including draft events!)";
+
+                foreach (var ev in organizer.OrganizedEvents)
+                {
+                    var ticketTypes = _context.TicketTypes
+                        .Include(tt => tt.OrderDetails)
+                            .ThenInclude(od => od.Tickets)
+                        .Where(tt => tt.EventId == ev.Id)
+                        .ToList();
+
+                    foreach (var tt in ticketTypes)
+                    {
+                        foreach (var od in tt.OrderDetails)
+                        {
+                            _context.Tickets.RemoveRange(od.Tickets);
+                        }
+                        _context.OrderDetails.RemoveRange(tt.OrderDetails);
+                    }
+                    _context.TicketTypes.RemoveRange(ticketTypes);
+                }
+                _context.Events.RemoveRange(organizer.OrganizedEvents);
+            }
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return "OK";
+        }
+
     }
 }

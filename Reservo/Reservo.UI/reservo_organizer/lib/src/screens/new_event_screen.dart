@@ -41,6 +41,7 @@ class _NewEventScreenState extends State<NewEventScreen>{
   final ImagePicker _picker = ImagePicker();
 
 
+
   List<TicketTypeInsert> _ticketTypes = [];
 
 @override
@@ -246,131 +247,156 @@ Future<void> _pickStartDate() async {
   
   Future<void> _requestVenuePopUp() async {
     final _formKey = GlobalKey<FormState>();
+    final cp= Provider.of<CategoryProvider>(context, listen: false);
     String? venueName;
     String? cityName;
     String? address;
     int? capacity;
     String? description;
-    String? allowedCategories;
+    List<int> selectedCategoryIds = [];
+    String? suggestedCategories;
 
     await showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text("Request a new venue"),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.4,
-            child: SingleChildScrollView(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      decoration: const InputDecoration(labelText: "Venue Name"),
-                      validator: (v) => v == null || v.isEmpty ? "Required" : null,
-                      onSaved: (v) => venueName = v,
-                    ),
-                    TextFormField(
-                      decoration: const InputDecoration(labelText: "City Name"),
-                      validator: (v) => v == null || v.isEmpty ? "Required" : null,
-                      onSaved: (v) => cityName = v,
-                    ),
-                    TextFormField(
-                      decoration: const InputDecoration(labelText: "Address"),
-                      validator: (v) => v == null || v.isEmpty ? "Required" : null,
-                      onSaved: (v) => address = v,
-                    ),
-                    TextFormField(
-                      decoration: const InputDecoration(labelText: "Capacity"),
-                      keyboardType: TextInputType.number,
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return "Required";
-                        final val = int.tryParse(v);
-                        if (val == null || val <= 0) return "Must be > 0";
-                        return null;
-                      },
-                      onSaved: (v) => capacity = int.tryParse(v ?? "0"),
-                    ),
-                    TextFormField(
-                      decoration: const InputDecoration(labelText: "Description (optional)"),
-                      onSaved: (v) => description = v,
-                    ),
-                    TextFormField(
-                      decoration: const InputDecoration(
-                          labelText: "Allowed Categories (comma separated)"),
-                      onSaved: (v) => allowedCategories = v,
-                    ),
-                  ],
+    context: context,
+    builder: (ctx) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text("Request a new venue"),
+            content: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.4,
+              child: SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        decoration: const InputDecoration(labelText: "Venue Name"),
+                        validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                        onSaved: (v) => venueName = v,
+                      ),
+                      TextFormField(
+                        decoration: const InputDecoration(labelText: "City Name"),
+                        validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                        onSaved: (v) => cityName = v,
+                      ),
+                      TextFormField(
+                        decoration: const InputDecoration(labelText: "Address"),
+                        validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                        onSaved: (v) => address = v,
+                      ),
+                      TextFormField(
+                        decoration: const InputDecoration(labelText: "Capacity"),
+                        keyboardType: TextInputType.number,
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return "Required";
+                          final val = int.tryParse(v);
+                          if (val == null || val <= 0) return "Must be > 0";
+                          return null;
+                        },
+                        onSaved: (v) => capacity = int.tryParse(v ?? "0"),
+                      ),
+                      TextFormField(
+                        decoration: const InputDecoration(labelText: "Description (optional)"),
+                        onSaved: (v) => description = v,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Allowed Categories"),
+                          ...cp.categories.map((c) => CheckboxListTile(
+                            value: selectedCategoryIds.contains(c.id),
+                            title: Text(c.name),
+                            onChanged: (checked) {
+                              setState(() {
+                                if (checked == true) {
+                                  selectedCategoryIds.add(c.id);
+                                } else {
+                                  selectedCategoryIds.remove(c.id);
+                                }
+                              });
+                            },
+                          )),
+                          TextFormField(
+                            decoration: const InputDecoration(
+                                labelText: "Other Categories (optional)"
+                            ),
+                            onSaved: (v) => suggestedCategories = v,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-              if (_formKey.currentState!.validate()) {
-                _formKey.currentState!.save();
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
 
-                final vp = context.read<VenueProvider>();
-                try {
-                  final requestInsert = VenueRequestInsert(
-                    venueName: venueName!, 
-                    cityName: cityName!, 
-                    address: address!, 
-                    capacity: capacity!, 
-                    description: description,
-                    allowedCategories: allowedCategories!
-                  );
+                    final vp = context.read<VenueProvider>();
+                    try {
+                      final requestInsert = VenueRequestInsert(
+                        venueName: venueName!,
+                        cityName: cityName!,
+                        address: address!,
+                        capacity: capacity!,
+                        description: description,
+                        allowedCategoryIds: selectedCategoryIds,
+                        suggestedCategories: suggestedCategories,
+                      );
 
-                  final request = await vp.requestVenue(requestInsert);
+                      final request = await vp.requestVenue(requestInsert);
 
-                  Navigator.of(ctx).pop();
+                      Navigator.of(ctx).pop();
 
-                  showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: const Text("Success!"),
-                      content: Text("Venue request submitted for venue: ${request.venueName}"),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text("Close"),
+                      showDialog(
+                        context: ctx,
+                        builder: (ctx2) => AlertDialog(
+                          title: const Text("Success!"),
+                          content: Text("Venue request submitted for venue: ${request.venueName}"),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(ctx2).pop(),
+                              child: const Text("Close"),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  );
-                } catch (e) {
+                      );
+                    } catch (e) {
+                      Navigator.of(ctx).pop();
 
-                  Navigator.of(ctx).pop();
-
-                  showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: const Text("Error!"),
-                      content: Text("Error: $e"),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text("Close"),
+                      showDialog(
+                        context: ctx,
+                        builder: (ctx2) => AlertDialog(
+                          title: const Text("Error!"),
+                          content: Text("Error: $e"),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(ctx2).pop(),
+                              child: const Text("Close"),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  );
-                }
-              }
-            },
-
-              child: const Text("Submit"),
-            ),
-          ],
-        );
-      },
-    );
+                      );
+                    }
+                  }
+                },
+                child: const Text("Submit"),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
   }
 
   @override

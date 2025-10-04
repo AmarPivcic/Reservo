@@ -8,5 +8,6 @@ namespace Reservo.Model.SearchObjects
 {
     public class VenueRequestSearchObject : BaseSearchObject
     {
+        public string? State { get; set; }
     }
 }

@@ -33,6 +33,7 @@ class VenueProvider extends BaseProvider<Venue, VenueInsertUpdate> {
     }
   }
 
+
   Future<String> insertVenue(VenueInsertUpdate dto) async {
     try {
       await insert(dto, toJson: (d) => d.toJson());

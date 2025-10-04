@@ -7,6 +7,7 @@ import 'package:reservo_client/src/providers/review_provider.dart';
 import 'package:reservo_client/src/screens/home_screen.dart';
 import 'package:reservo_client/src/screens/master_screen.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:reservo_client/src/screens/orders_screen.dart';
 import '../providers/order_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -171,10 +172,47 @@ Future<void> _deleteReview(int reviewId) async {
     );
   }
 
+  Future<void> _showDeleteDialog(int orderId) async {
+    showDialog(
+      context: context, 
+      builder: (ctx) => AlertDialog(
+        title: const Text("Delete order"),
+        content: const Text("Are you sure you want to delete this order?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Close"),
+          ),
+          TextButton(
+            onPressed: () async {
+              final provider = Provider.of<OrderProvider>(context, listen: false);
+              final result = await provider.deletOrder(orderId);
+              if (result == "OK") {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Order deleted!")),
+                  );
+                if (context.mounted) Navigator.of(ctx).pop();
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const OrdersScreen(ordersFilter: "previous")),(route) => false);
+              } else {
+                if (context.mounted) {
+                  Navigator.of(ctx).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(result)),
+                  );
+                }
+              }
+            },
+            child: const Text("Delete"),
+          )
+        ],
+      )
+    );
+  }
+
   Widget _buildReviewSection(OrderDetails order) {
-    // if (order.state.toLowerCase() != "completed") {
-    //   return const SizedBox.shrink();
-    // }
+    if (order.state.toLowerCase() != "completed") {
+      return const SizedBox.shrink();
+    }
 
   if (_orderReview != null && _orderReview!.rating != null) {
     return SizedBox(
@@ -457,6 +495,15 @@ Future<void> _deleteReview(int reviewId) async {
                       child: const Text("Cancel order"),
                       onPressed: () {
                         _showCancelDialog();
+                      },
+                    ),
+                  ),
+                if(state != "active")
+                  Center(
+                    child: ElevatedButton(
+                      child: const Text("Delete order"),
+                      onPressed: () {
+                        _showDeleteDialog(widget.orderId);
                       },
                     ),
                   ),

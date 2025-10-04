@@ -186,6 +186,8 @@ namespace Reservo.Services.StateMachineServices.EventStateMachine
                     .ToList();
                 _context.Orders.RemoveRange(orders);
 
+                _context.TicketTypes.RemoveRange(ev.TicketTypes);
+
                 _context.Events.Remove(ev);
 
                 await _context.SaveChangesAsync();
