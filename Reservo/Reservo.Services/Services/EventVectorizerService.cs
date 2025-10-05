@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace Reservo.Services.Services
 {
-    public class EventVectorizerService
+    public class EventVectorizerService : IEventVectorizerService
     {
         private readonly MLContext _mlContext;
         private readonly IEventService _eventService;

@@ -3,7 +3,7 @@ using MassTransit;
 using MassTransit.Transports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using ReservationEmailConsumer.Contracts;
+using Reservo.Contracts;
 using Reservo.Model.DTOs.User;
 using Reservo.Model.Entities;
 using Reservo.Model.SearchObjects;
@@ -376,43 +376,49 @@ namespace Reservo.Services.Services
 
         public override async Task<string> Delete(int id)
         {
-            var user = await _context.Users
-                .Include(u => (u as Client).Orders)
-                .Include(u => (u as Organizer).OrganizedEvents)
-                .FirstOrDefaultAsync(u => u.Id == id);
+            var client = await _context.Users.OfType<Client>()
+                .Include(c => c.Orders)
+                    .ThenInclude(o => o.OrderDetails)
+                .ThenInclude(od => od.Tickets)
+                .FirstOrDefaultAsync(c => c.Id == id);
 
-            if (user == null)
-                return "User not found!";
-
-            if (user is Client client)
+            if (client != null)
             {
-                var ordersToDelete = await _context.Orders
-                    .Where(o => o.State != "active")
-                    .Include(o => o.OrderDetails)
-                    .ToListAsync();
+                if (client.Orders.Any(o => o.State == "active"))
+                    return "Cannot delete client with active orders. Please cancel or complete them first!";
 
-                foreach (var order in ordersToDelete)
+                foreach (var order in client.Orders)
                 {
+                    foreach (var detail in order.OrderDetails)
+                    {
+                        _context.Tickets.RemoveRange(detail.Tickets);
+                    }
+
                     _context.OrderDetails.RemoveRange(order.OrderDetails);
                 }
 
-                _context.Orders.RemoveRange(ordersToDelete);
+                _context.Orders.RemoveRange(client.Orders);
+                _context.Users.Remove(client);
+
+                await _context.SaveChangesAsync();
+                return "OK";
             }
 
-            if (user is Organizer organizer)
+            var organizer = await _context.Users.OfType<Organizer>()
+                .Include(o => o.OrganizedEvents)
+                    .ThenInclude(e => e.TicketTypes)
+                        .ThenInclude(tt => tt.OrderDetails)
+                            .ThenInclude(od => od.Tickets)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (organizer != null)
             {
                 if (organizer.OrganizedEvents.Any(e => e.State == "active" || e.State == "draft"))
-                    return "Cannot delete organizer with active events. Cancel or delete them first! (Including draft events!)";
+                    return "Cannot delete organizer with active or draft events. Cancel or delete them first!";
 
                 foreach (var ev in organizer.OrganizedEvents)
                 {
-                    var ticketTypes = _context.TicketTypes
-                        .Include(tt => tt.OrderDetails)
-                            .ThenInclude(od => od.Tickets)
-                        .Where(tt => tt.EventId == ev.Id)
-                        .ToList();
-
-                    foreach (var tt in ticketTypes)
+                    foreach (var tt in ev.TicketTypes)
                     {
                         foreach (var od in tt.OrderDetails)
                         {
@@ -420,15 +426,28 @@ namespace Reservo.Services.Services
                         }
                         _context.OrderDetails.RemoveRange(tt.OrderDetails);
                     }
-                    _context.TicketTypes.RemoveRange(ticketTypes);
+                    _context.TicketTypes.RemoveRange(ev.TicketTypes);
                 }
+
                 _context.Events.RemoveRange(organizer.OrganizedEvents);
+                _context.Users.Remove(organizer);
+
+                await _context.SaveChangesAsync();
+                return "OK";
             }
+
+ 
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+                return "User not found!";
+
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
             return "OK";
         }
+
+
 
     }
 }

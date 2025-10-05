@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Reservo.EmailConsumer\Reservo.EmailConsumer.csproj" />
+    <ProjectReference Include="..\Reservo.Contracts\Reservo.Contracts.csproj" />
     <ProjectReference Include="..\Reservo.Model\Reservo.Model.csproj" />
   </ItemGroup>
 

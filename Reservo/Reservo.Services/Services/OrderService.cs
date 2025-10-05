@@ -8,7 +8,7 @@ using Reservo.Model.Utilities;
 using Reservo.Services.Database;
 using Reservo.Services.Interfaces;
 using MassTransit;
-using ReservationEmailConsumer.Contracts;
+using Reservo.Contracts;
 
 
 

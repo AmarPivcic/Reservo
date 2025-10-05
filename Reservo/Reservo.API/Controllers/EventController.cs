@@ -14,9 +14,9 @@ namespace Reservo.API.Controllers
     public class EventController : BaseController<Event, EventGetDTO, EventInsertDTO, EventUpdateDTO, EventSearchObject>
     {
         private readonly RecommendationService _recommendationService;
-        private readonly EventVectorizerService _vectorizerService;
+        private readonly IEventVectorizerService _vectorizerService;
 
-        public EventController(IEventService service, RecommendationService recommendationService, EventVectorizerService vectorizerService, ILogger<BaseController<Event, EventGetDTO, EventInsertDTO,EventUpdateDTO,EventSearchObject>> logger) : base(service, logger)
+        public EventController(IEventService service, RecommendationService recommendationService, IEventVectorizerService vectorizerService, ILogger<BaseController<Event, EventGetDTO, EventInsertDTO,EventUpdateDTO,EventSearchObject>> logger) : base(service, logger)
         {
             _vectorizerService = vectorizerService;
             _recommendationService = recommendationService;

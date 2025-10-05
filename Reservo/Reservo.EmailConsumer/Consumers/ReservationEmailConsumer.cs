@@ -1,7 +1,7 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Logging;
-using ReservationEmailConsumer.Contracts;
 using ReservationEmailConsumer.Services;
+using Reservo.Contracts;
 namespace ReservationEmailConsumer.Consumers;
 
 public class ReservationEmailConsumer : IConsumer<ReservationEmailMessage>

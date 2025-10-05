@@ -1,0 +1,94 @@
+services:
+  # SQL Server Service
+  reservo-sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=MySuperStrong!Pass123
+      - MSSQL_PID=Developer
+    ports:
+      - "1401:1433"
+    expose:
+      - 1433
+    networks:
+      - reservo-network
+    volumes:
+      - reservo-sql-data:/var/opt/mssql
+   
+
+  # RabbitMQ Service
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USERNAME}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - reservo-network
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    user: "999:999"
+
+  # Reservo API Service
+  reservo-api:
+    build:
+      context: .
+      dockerfile: Reservo.API/Dockerfile
+    env_file:
+     - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings:ReservoConnection=Server=reservo-sql,1433;Database=210195;User ID=sa;Password=MySuperStrong!Pass123;TrustServerCertificate=True
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY} 
+    ports:
+      - "5113:5113"
+    networks:
+      - reservo-network
+    depends_on:
+      - reservo-sql
+      - rabbitmq
+    restart: unless-stopped
+
+  # Email Consumer Service
+  reservo-subscriber:
+    build:
+      context: .
+      dockerfile: Reservo.EmailConsumer/Dockerfile
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_QUEUE=${RABBITMQ_QUEUE}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    networks:
+      - reservo-network
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
+
+networks:
+  reservo-network:
+    driver: bridge
+
+volumes:
+  reservo-sql-data:
+    driver: local
+  rabbitmq-data:
+    driver: local

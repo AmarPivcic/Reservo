@@ -7,7 +7,7 @@ import 'package:reservo_client/src/utilities/custom_exception.dart';
 
 abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
   
-  static const String baseUrl = 'http://192.168.2.2:5113';
+  static const String baseUrl = 'http://10.0.2.2:5113';
   final FlutterSecureStorage storage = const FlutterSecureStorage();
   final String endpoint;
 
@@ -39,7 +39,7 @@ abstract class BaseProvider<T, TInsertUpdate> with ChangeNotifier {
         Uri.parse(url),
         headers: await createHeaders(),
       );
-
+      print(url);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;

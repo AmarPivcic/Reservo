@@ -20,7 +20,6 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
-**/event_vectorizer.zip
 LICENSE
 README.md
 !**/.gitignore
