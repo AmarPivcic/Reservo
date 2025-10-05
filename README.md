@@ -69,7 +69,7 @@ Client App     | client1       | client1
 
 APK Installation
 
-Two APKs are provided in the frontend folder (inside zip files).
+Two APKs are provided in the frontend folder for Android devices, and two executable files for Windows desktop apps (inside zip files).
 
 Installation on Emulator:
 1. Extract the APK from the zip file.
@@ -78,7 +78,7 @@ Installation on Emulator:
 
 adb install path/to/app.apk
 
-4. Important: Update the API connection string in the app to point to your local backend (e.g., http://10.0.2.2:5000 for Android emulator).
+4. Important: Update the API connection string in the app to point to your local backend (the connection string is already set up for emulator usage, this is required only for real devices).
 
 Installation on Real Device:
 1. Enable USB debugging on your device.
@@ -86,8 +86,6 @@ Installation on Real Device:
 3. Install APK:
 
 adb install path/to/app.apk
-
-4. Update the connection string to your machine's IP address (e.g., http://192.168.1.100:5000) so the app can communicate with the backend.
 
 ---
 
