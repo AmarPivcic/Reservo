@@ -79,7 +79,7 @@ namespace Reservo.API.Controllers
                 var organizerRole = await _context.Roles.FirstAsync(r => r.Name == "Organizer");
                 var clientRole = await _context.Roles.FirstAsync(r => r.Name == "Client");
 
-                var admin = new User
+                var admin = new Admin
                 {
                     Name = "Admin",
                     Surname = "One",
@@ -95,7 +95,7 @@ namespace Reservo.API.Controllers
                     RoleId = adminRole.Id
                 };
 
-                var org1 = new User
+                var org1 = new Organizer
                 {
                     Name = "Org",
                     Surname = "One",
@@ -111,7 +111,7 @@ namespace Reservo.API.Controllers
                     RoleId = organizerRole.Id
                 };
 
-                var org2 = new User
+                var org2 = new Organizer
                 {
                     Name = "Org",
                     Surname = "Two",
@@ -127,7 +127,7 @@ namespace Reservo.API.Controllers
                     RoleId = organizerRole.Id
                 };
 
-                var client = new User
+                var client = new Client
                 {
                     Name = "Client",
                     Surname = "One",

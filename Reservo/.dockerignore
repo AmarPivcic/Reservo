@@ -22,6 +22,7 @@
 **/values.dev.yaml
 **/event_vectorizer.zip
 LICENSE
+Reservo.UI/reservo_scanner/
 README.md
 !**/.gitignore
 !.git/HEAD

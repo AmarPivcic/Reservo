@@ -50,7 +50,10 @@ class _CitiesScreenState extends State<CitiesScreen> {
               if (_formKey.currentState!.validate()) {
                 final result = await onSubmit(_controller.text);
                 if (result == "OK") {
-                  if (context.mounted) Navigator.of(ctx).pop();
+                  if (context.mounted) {
+                    await Provider.of<CityProvider>(context, listen: false).getCities();
+                    Navigator.of(ctx).pop();
+                  }
                 } else {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(

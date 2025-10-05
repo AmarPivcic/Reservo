@@ -647,3 +647,4 @@ FodyWeavers.xsd
 
 # Custom ignore
 Reservo.API/event_vectorizer.zip
+Reservo.UI/reservo_scanner/

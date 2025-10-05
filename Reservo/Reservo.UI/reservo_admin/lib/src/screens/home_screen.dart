@@ -91,10 +91,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    final result =
-                        await onSubmit(_nameController.text, _base64Image);
+                    final result = await onSubmit(_nameController.text, _base64Image);
                     if (result == "OK") {
-                      if (context.mounted) Navigator.of(ctx).pop();
+                      if (context.mounted) {
+                        await Provider.of<CategoryProvider>(context, listen: false).getCategories();
+                        Navigator.of(ctx).pop();
+                      }
                     } else {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -105,7 +107,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 },
                 child: const Text("Save"),
-              ),
+              )
+
             ],
           );
         });
