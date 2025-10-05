@@ -3,7 +3,7 @@
 **Reservo** is a comprehensive software solution developed as part of the Software Development II seminar project. The system consists of an **ASP.NET Core Web API** backend and a **Flutter** frontend. It is fully dockerized for easy setup and deployment.
 
 ## Notice
-Please wait approximately 30 seconds after starting the Docker containers for the first time to allow the database to initialize.
+### Please wait approximately 30 seconds after starting the Docker containers for the first time to allow the database to initialize. Ticket scanning app has camera view port on real devices, but there is also a backup button for uploading images on Android emulator. 
 ---
 
 Table of Contents
