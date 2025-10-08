@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Reservo.Model.DTOs.Event;
+using Reservo.Model.DTOs.OrderDetail;
 using Reservo.Model.Entities;
 using Reservo.Model.SearchObjects;
 using Reservo.Model.Utilities;
@@ -34,6 +35,26 @@ namespace Reservo.API.Controllers
             }
 
             return await (_service as IEventService).Get(search);
+        }
+
+        [HttpGet("GetEventsForStats")]
+        public async Task<PagedResult<EventGetDTO>> GetEventsForStats([FromQuery] EventSearchObject? search = null)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+            {
+                int organizerId = userId;
+                return await (_service as IEventService).GetEventsForStats(organizerId);
+            }
+            return await (_service as IEventService).Get();
+        }
+
+        [HttpGet("GetOrdersForEvents/{eventId}")]
+        public async Task<List<OrderDetailsDTO>> GetOrdersForEvents(int eventId)
+        {
+
+            return await (_service as IEventService).GetOrdersForEventAsync(eventId);
+
         }
 
         [HttpPost("TrainEventVectors")]

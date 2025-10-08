@@ -125,7 +125,7 @@ class _ReportScreenState extends State<ReportScreen> {
 
                     const SizedBox(height: 16),
                     Text(
-                      "Total Profit: \$${_calculateTotal(provider).toStringAsFixed(2)}",
+                      "Total Profit: €${_calculateTotal(provider).toStringAsFixed(2)}",
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,

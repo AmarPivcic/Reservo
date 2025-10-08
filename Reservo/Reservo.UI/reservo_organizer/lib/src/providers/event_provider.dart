@@ -6,12 +6,15 @@ import 'package:reservo_organizer/src/models/search_result.dart';
 import 'package:reservo_organizer/src/providers/base_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:reservo_organizer/src/utilities/custom_exception.dart';
+import '../models/order_details/order_details.dart';
 
 class EventProvider extends BaseProvider<Event, EventInsertUpdate>
 {
   List<Event> events = [];
   bool isLoading = false;
   int countOfEvents = 0;
+  List<OrderDetails> _orders = [];
+  List<OrderDetails> get orders => _orders;
 
   EventProvider() : super('Event');
 
@@ -68,6 +71,26 @@ class EventProvider extends BaseProvider<Event, EventInsertUpdate>
       notifyListeners();
     }
   }
+
+  Future<void> getEventsForStats() async {
+     try {
+      SearchResult<Event> searchResult = await get(
+        fromJson: (json) => Event.fromJson(json),
+        customEndpoint: 'GetEventsForStats'
+      );
+    events = searchResult.result;
+    countOfEvents = searchResult.count;
+    isLoading = false;
+    notifyListeners();
+    } catch (e) {
+      events = [];
+      countOfEvents = 0;
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+
 
   Future<Event> insertEvent(EventInsertUpdate eventData) async {
     return insertResponse<Event, EventInsertUpdate>(
@@ -212,5 +235,20 @@ class EventProvider extends BaseProvider<Event, EventInsertUpdate>
       throw CustomException("Can't reach the server. Please check your connection.");
     }
   }
+
+   Future<void> fetchOrdersForEvent(int eventId) async {
+      final response = await http.get(
+        Uri.parse('${BaseProvider.baseUrl}/Event/GetOrdersForEvents/$eventId'),
+        headers: await createHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        List jsonData = json.decode(response.body);
+        _orders = jsonData.map((o) => OrderDetails.fromJson(o)).toList();
+        notifyListeners();
+      } else {
+        throw Exception('Failed to load orders');
+      }
+    }
 
 }

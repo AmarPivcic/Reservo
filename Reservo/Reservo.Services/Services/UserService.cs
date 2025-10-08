@@ -393,8 +393,6 @@ namespace Reservo.Services.Services
                     {
                         _context.Tickets.RemoveRange(detail.Tickets);
                     }
-
-                    _context.OrderDetails.RemoveRange(order.OrderDetails);
                 }
 
                 _context.Orders.RemoveRange(client.Orders);

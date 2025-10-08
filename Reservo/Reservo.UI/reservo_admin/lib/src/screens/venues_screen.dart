@@ -16,14 +16,16 @@ class VenuesScreen extends StatefulWidget {
 
 class _VenuesScreenState extends State<VenuesScreen> {
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await Provider.of<VenueProvider>(context, listen: false).getVenues();
-      await Provider.of<CityProvider>(context, listen: false).getCities();
-      await Provider.of<CategoryProvider>(context, listen: false).getCategories();
-    });
-  }
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    await Future.wait([
+      Provider.of<VenueProvider>(context, listen: false).getVenues(),
+      Provider.of<CityProvider>(context, listen: false).getCities(),
+      Provider.of<CategoryProvider>(context, listen: false).getCategories(),
+    ]);
+  });
+}
 
   void _showVenueDialog({
     VenueInsertUpdate? initialData,
@@ -214,15 +216,52 @@ class _VenuesScreenState extends State<VenuesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(venue.name, style: const TextStyle(fontSize: 18, color: Colors.white)),
-                Text(venue.address,
-                    style: const TextStyle(fontSize: 14, color: Colors.white70)),
-                Text("Capacity: ${venue.capacity}",
-                    style: const TextStyle(fontSize: 14, color: Colors.white70)),
+                Text(
+                  venue.name,
+                  style: const TextStyle(fontSize: 18, color: Colors.white),
+                ),
+                const SizedBox(height: 4),
+
+                Row(
+                  children: [
+                    const Icon(Icons.location_on, color: Colors.white70, size: 16),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        venue.address,
+                        style: const TextStyle(fontSize: 14, color: Colors.white70),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+
+                Row(
+                  children: [
+                    const Icon(Icons.people, color: Colors.white70, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      "${venue.capacity}",
+                      style: const TextStyle(fontSize: 14, color: Colors.white70),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+
                 if (venue.cityName != null)
-                  Text("City: ${venue.cityName}",
-                      style: const TextStyle(fontSize: 14, color: Colors.white70)),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_city, color: Colors.white70, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        venue.cityName!,
+                        style: const TextStyle(fontSize: 14, color: Colors.white70),
+                      ),
+                    ],
+                  ),
               ],
+
             ),
           ),
           Row(
@@ -259,50 +298,76 @@ class _VenuesScreenState extends State<VenuesScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return MasterScreen(
-      child: Consumer<VenueProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) return const Center(child: CircularProgressIndicator());
+Widget build(BuildContext context) {
+  final cityProvider = Provider.of<CityProvider>(context);
+  final categoryProvider = Provider.of<CategoryProvider>(context);
 
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Center(
-                child: Container(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    color: Colors.grey.shade800,
-                  ),
-                  child: Column(
-                    children: [
-                      const Text(
-                        "Venues",
-                        style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+  return MasterScreen(
+    child: Consumer<VenueProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading ||
+            cityProvider.isLoading ||
+            categoryProvider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (provider.venues.isEmpty || cityProvider.cities.isEmpty) {
+          return const Center(
+            child: Text(
+              "No venues found or data still loading...",
+              style: TextStyle(color: Colors.white70),
+            ),
+          );
+        }
+
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Center(
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.8,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.grey.shade800,
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      "Venues",
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                      const SizedBox(height: 16),
-                      ...List.generate(provider.venues.length,
-                          (index) => _buildVenueRow(provider, index)),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: () => _showVenueDialog(
-                          onSubmit: (dto) => Provider.of<VenueProvider>(context, listen: false)
-                              .insertVenue(dto),
-                        ),
-                        icon: const Icon(Icons.add),
-                        label: const Text("Add New Venue"),
+                    ),
+                    const SizedBox(height: 16),
+
+                    ...List.generate(
+                      provider.venues.length,
+                      (index) => _buildVenueRow(provider, index),
+                    ),
+
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: () => _showVenueDialog(
+                        onSubmit: (dto) => Provider.of<VenueProvider>(
+                          context,
+                          listen: false,
+                        ).insertVenue(dto),
                       ),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
+                      icon: const Icon(Icons.add),
+                      label: const Text("Add New Venue"),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
             ),
-          );
-        },
-      ),
-    );
-  }
+          ),
+        );
+      },
+    ),
+  );
+}
 }

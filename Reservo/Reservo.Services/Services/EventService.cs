@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Reservo.Model.DTOs.Event;
+using Reservo.Model.DTOs.Order;
+using Reservo.Model.DTOs.OrderDetail;
 using Reservo.Model.Entities;
 using Reservo.Model.SearchObjects;
 using Reservo.Model.Utilities;
@@ -61,6 +63,69 @@ namespace Reservo.Services.Services
         {
             var events = await _context.Events.ToListAsync();
             return events;
+        }
+
+        public async Task<List<OrderDetailsDTO>> GetOrdersForEventAsync(int eventId)
+        {
+            var orders = await _context.Orders
+                .Where(o => o.OrderDetails.Any(od => od.TicketType.EventId == eventId)
+                            && (o.State == "active" || o.State == "completed"))
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.TicketType)
+                        .ThenInclude(tt => tt.Event)          
+                            .ThenInclude(e => e.Venue)       
+                                .ThenInclude(v => v.City)    
+                .Include(o => o.User)
+                .ToListAsync();
+
+            var orderDtos = orders.Select(o => new OrderDetailsDTO
+            {
+                OrderId = o.Id,
+                TotalAmount = o.TotalAmount,
+                State = o.State,
+                EventId = eventId,
+                EventName = o.OrderDetails.First(od => od.TicketType.EventId == eventId).TicketType.Event.Name,
+                Venue = o.OrderDetails.First(od => od.TicketType.EventId == eventId).TicketType.Event.Venue.Name,
+                EventDate = o.OrderDetails.First(od => od.TicketType.EventId == eventId).TicketType.Event.StartDate,
+                City = o.OrderDetails.First(od => od.TicketType.EventId == eventId).TicketType.Event.Venue.City.Name,
+                Tickets = o.OrderDetails
+                 .Where(od => od.TicketType.EventId == eventId)
+                 .Select(od => new OrderTicketDTO
+                 {
+                     TicketTypeId = od.TicketTypeId,
+                     TicketTypeName = od.TicketType.Name,
+                     Quantity = od.Quantity,
+                     UnitPrice = od.UnitPrice,
+                     TotalPrice = od.TotalPrice
+                 }).ToList(),
+                OrderedBy = o.User.Username
+            }).ToList();
+
+
+            return orderDtos;
+        }
+
+        public async Task<PagedResult<EventGetDTO>> GetEventsForStats(int organizerId)
+        {
+            var query = _context.Events.AsQueryable();
+
+            query = query.Where(e => e.OrganizerId == organizerId);
+
+            query = query.Where(e => e.State == "active" || e.State == "completed");
+
+            query = query.Include(e => e.Venue).ThenInclude(v => v.City);
+
+            var events = await query
+                .OrderByDescending(e => e.StartDate)
+                .ToListAsync();
+
+            var resultDtos = _mapper.Map<List<EventGetDTO>>(events);
+
+            return new PagedResult<EventGetDTO>
+            {
+                Result = resultDtos,
+                Count = resultDtos.Count
+            };
         }
 
 
@@ -143,6 +208,9 @@ namespace Reservo.Services.Services
                 throw new UserException($"Entity ({id}) doesn't exists!");
             }
         }
+
+
+
 
         public async Task<List<string>> AllowedActions(int id)
         {

@@ -7,73 +7,84 @@ import 'package:reservo_organizer/src/providers/event_provider.dart';
 import 'package:reservo_organizer/src/screens/cancelled_events_screen.dart';
 import 'package:reservo_organizer/src/screens/draft_events_screen.dart';
 import 'package:reservo_organizer/src/screens/event_edit_screen.dart';
+import 'package:reservo_organizer/src/screens/event_stats_list_screen.dart';
 import 'package:reservo_organizer/src/screens/home_screen.dart';
 import 'package:reservo_organizer/src/screens/master_screen.dart';
 import 'package:reservo_organizer/src/screens/new_event_screen.dart';
 import 'package:reservo_organizer/src/screens/previous_events_screen.dart';
 import 'package:reservo_organizer/src/screens/report_screen.dart';
 import '../models/event/event.dart';
+import 'event_stats_screen.dart';
 
-class EventListScreen  extends StatefulWidget {
+class EventListScreen extends StatefulWidget {
   final String state;
   final String title;
+  final bool isStats;
 
-  const EventListScreen ({super.key, required this.state, required this.title});
+  const EventListScreen({
+    super.key,
+    required this.state,
+    required this.title,
+    this.isStats = false,
+  });
 
   @override
-  State<EventListScreen > createState() => _EventListScreenState();
+  State<EventListScreen> createState() => _EventListScreenState();
 }
 
 class _EventListScreenState extends State<EventListScreen> {
+  final _nameController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _venueController = TextEditingController();
+  DateTime? _selectedDate;
 
-final _nameController = TextEditingController();
-final _cityController = TextEditingController();
-final _venueController = TextEditingController();
-DateTime? _selectedDate;
-
-@override
-void dispose() {
-  _nameController.dispose();
-  _cityController.dispose();
-  _venueController.dispose();
-  super.dispose();
-}
-
-Future<void> _pickDate() async {
-  final now = DateTime.now();
-  final picked = await showDatePicker(
-    context: context, 
-    initialDate: _selectedDate ?? now,
-    firstDate: DateTime(now.year - 1), 
-    lastDate: DateTime(now.year + 3)
-  );
-
-  if(picked != null)
-  {
-    setState(() => _selectedDate = picked);
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _cityController.dispose();
+    _venueController.dispose();
+    super.dispose();
   }
-}
 
-void _applyFilters() {
-  final ep = context.read<EventProvider>();
-  ep.getEvents(
-    nameFilter: _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
-    cityFilter: _cityController.text.trim().isEmpty ? null : _cityController.text.trim(),
-    venueFilter: _venueController.text.trim().isEmpty ? null : _venueController.text.trim(),
-    date: _selectedDate,
-    state: widget.state
-  );
-}
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+        context: context,
+        initialDate: _selectedDate ?? now,
+        firstDate: DateTime(now.year - 1),
+        lastDate: DateTime(now.year + 3));
 
-void _clearFilters() {
-  setState(() {
-    _nameController.clear();
-    _venueController.clear();
-    _cityController.clear();
-    _selectedDate = null;
-  });
-  context.read<EventProvider>().getEvents(state: widget.state);
-}
+    if (picked != null) {
+      setState(() => _selectedDate = picked);
+    }
+  }
+
+  void _applyFilters() {
+    final ep = context.read<EventProvider>();
+    if (!widget.isStats) {
+      ep.getEvents(
+          nameFilter:
+              _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
+          cityFilter:
+              _cityController.text.trim().isEmpty ? null : _cityController.text.trim(),
+          venueFilter:
+              _venueController.text.trim().isEmpty ? null : _venueController.text.trim(),
+          date: _selectedDate,
+          state: widget.state);
+    } else {
+      ep.getEventsForStats();
+    }
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _nameController.clear();
+      _venueController.clear();
+      _cityController.clear();
+      _selectedDate = null;
+    });
+    context.read<EventProvider>().getEvents(state: widget.state);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +104,7 @@ void _clearFilters() {
         TextButton.icon(
           onPressed: () {
             Navigator.push(
-              context, 
+              context,
               MaterialPageRoute(builder: (context) => const PreviousEventsScreen()),
             );
           },
@@ -103,7 +114,7 @@ void _clearFilters() {
         TextButton.icon(
           onPressed: () {
             Navigator.push(
-              context, 
+              context,
               MaterialPageRoute(builder: (context) => const CancelledEventsScreen()),
             );
           },
@@ -113,7 +124,7 @@ void _clearFilters() {
         TextButton.icon(
           onPressed: () {
             Navigator.push(
-              context, 
+              context,
               MaterialPageRoute(builder: (context) => const DraftEventsScreen()),
             );
           },
@@ -123,8 +134,18 @@ void _clearFilters() {
         TextButton.icon(
           onPressed: () {
             Navigator.push(
-              context, 
-              MaterialPageRoute( builder: (_) => const ReportScreen())
+              context,
+              MaterialPageRoute(builder: (context) => const EventStatsListScreen()),
+            );
+          },
+          icon: const Icon(Icons.list, color: Colors.white),
+          label: const Text("Orders per event", style: TextStyle(color: Colors.white)),
+        ),
+        TextButton.icon(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ReportScreen()),
             );
           },
           icon: const Icon(Icons.auto_graph_rounded, color: Colors.white),
@@ -133,63 +154,65 @@ void _clearFilters() {
       ],
       child: Consumer<EventProvider>(
         builder: (context, ep, _) {
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: constraints.maxWidth * 0.25,
-                    child: _FilterPanel(
-                      nameController: _nameController,
-                      cityController: _cityController,
-                      venueController: _venueController,
-                      selectedDate: _selectedDate,
-                      onPickDate: _pickDate,
-                      onApply: _applyFilters,
-                      onClear: _clearFilters,
-                    ),
+          return LayoutBuilder(builder: (context, constraints) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: constraints.maxWidth * 0.25,
+                  child: _FilterPanel(
+                    nameController: _nameController,
+                    cityController: _cityController,
+                    venueController: _venueController,
+                    selectedDate: _selectedDate,
+                    onPickDate: _pickDate,
+                    onApply: _applyFilters,
+                    onClear: _clearFilters,
                   ),
-                  SizedBox(
-                    width: constraints.maxWidth * 0.75,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: ep.isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            :Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.title,
-                                  style: Theme.of(context).textTheme.headline6,
+                ),
+                SizedBox(
+                  width: constraints.maxWidth * 0.75,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: ep.isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.title,
+                                style: Theme.of(context).textTheme.headline6,
+                              ),
+                              const SizedBox(height: 16),
+                              Expanded(
+                                child: _EventGrid(
+                                  events: ep.events,
+                                  state: widget.state,
+                                  isStats: widget.isStats,
                                 ),
-                                const SizedBox(height: 16),
-                                Expanded(
-                                  child: _EventGrid(events: ep.events, state: widget.state,),
-                                ),
-                              ],
-                            ),
-                    ),
-                  )
-                ],
-              );
-            }
-          );
+                              ),
+                            ],
+                          ),
+                  ),
+                )
+              ],
+            );
+          });
         },
-      )
+      ),
     );
   }
 }
 
 class _FilterPanel extends StatelessWidget {
   const _FilterPanel({
-    required this.nameController, 
-    required this.cityController, 
-    required this.venueController, 
-    required this.selectedDate, 
-    required this.onPickDate, 
-    required this.onApply, 
-    required this.onClear, 
+    required this.nameController,
+    required this.cityController,
+    required this.venueController,
+    required this.selectedDate,
+    required this.onPickDate,
+    required this.onApply,
+    required this.onClear,
   });
 
   final TextEditingController nameController;
@@ -213,7 +236,7 @@ class _FilterPanel extends StatelessWidget {
             controller: nameController,
             decoration: const InputDecoration(
               labelText: "Event name",
-              border: OutlineInputBorder()
+              border: OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 12),
@@ -221,7 +244,7 @@ class _FilterPanel extends StatelessWidget {
             controller: cityController,
             decoration: const InputDecoration(
               labelText: "City",
-              border: OutlineInputBorder()
+              border: OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 12),
@@ -229,10 +252,10 @@ class _FilterPanel extends StatelessWidget {
             controller: venueController,
             decoration: const InputDecoration(
               labelText: "Venue name",
-              border: OutlineInputBorder()
+              border: OutlineInputBorder(),
             ),
           ),
-          const SizedBox(height: 12,),
+          const SizedBox(height: 12),
           InputDecorator(
             decoration: const InputDecoration(
               labelText: "Date",
@@ -243,76 +266,65 @@ class _FilterPanel extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Text(
-                  selectedDate == null ? "Any date" : 
-                  DateFormat('dd.MM.yyyy').format(selectedDate!),
-                  ),
+                  selectedDate == null
+                      ? "Any date"
+                      : DateFormat('dd.MM.yyyy').format(selectedDate!),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(onPressed: onApply, 
-                  icon: Icon(Icons.search), 
-                  label: Text("Apply")
-                  )
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton.icon(onPressed: onClear, 
-                  icon: Icon(Icons.clear), 
-                  label: Text("Clear")
-                  )
-                )
-              ],
-            )
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                  child: ElevatedButton.icon(
+                      onPressed: onApply, icon: Icon(Icons.search), label: Text("Apply"))),
+              const SizedBox(width: 8),
+              Expanded(
+                  child: OutlinedButton.icon(
+                      onPressed: onClear, icon: Icon(Icons.clear), label: Text("Clear")))
+            ],
+          )
         ],
       ),
     );
   }
 }
 
-
 class _EventGrid extends StatelessWidget {
-  const _EventGrid({required this.events, required this.state});
+  const _EventGrid(
+      {required this.events, required this.state, required this.isStats});
 
   final List<Event> events;
   final String state;
-  
+  final bool isStats;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (_, constraints) {
       return GridView.builder(
-        itemCount: events.length + 1,
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 340,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 1
-        ),
-         itemBuilder: (_, index) {
-          if(index < events.length) {
-            return SizedBox(
-              width: 340,
-              child: _EventCard(event: events[index])
-            );
-          }
-          else if (state == "active") {
-            return SizedBox(
-              width: 340,
-              child: _AddEventCard(),
-            );
-          }
-          else {
-            return const SizedBox.shrink();
-          }
-         }
-      );
+          itemCount: events.length + 1,
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 340,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 1),
+          itemBuilder: (_, index) {
+            if (index < events.length) {
+              return SizedBox(
+                  width: 340, child: _EventCard(event: events[index], isStats: isStats));
+            } else if (state == "active") {
+              return SizedBox(
+                width: 340,
+                child: _AddEventCard(),
+              );
+            } else {
+              return const SizedBox.shrink();
+            }
+          });
     });
   }
 }
-
 
 class _AddEventCard extends StatelessWidget {
   @override
@@ -324,9 +336,7 @@ class _AddEventCard extends StatelessWidget {
       child: InkWell(
         onTap: () {
           Navigator.push(
-            context,
-            MaterialPageRoute(builder:(context) => const NewEventScreen())
-            );
+              context, MaterialPageRoute(builder: (context) => const NewEventScreen()));
         },
         child: Center(
           child: Column(
@@ -346,26 +356,22 @@ class _AddEventCard extends StatelessWidget {
   }
 }
 
-class _EventCard extends StatelessWidget{
+class _EventCard extends StatelessWidget {
+  const _EventCard({required this.event, required this.isStats});
 
-  const _EventCard({
-    required this.event
-  });
-  
   final Event event;
-  
+  final bool isStats;
+
   @override
   Widget build(BuildContext context) {
-
-    final name = event.name ;
+    final name = event.name;
     final venue = event.venueName;
     final city = event.cityName ?? "";
     final startDate = event.startDate;
     final dateText = DateFormat('dd.MM.yyyy').format(startDate);
     Uint8List? imageBytes;
 
-    if(event.image != null && event.image!.isNotEmpty)
-    {
+    if (event.image != null && event.image!.isNotEmpty) {
       imageBytes = base64Decode(event.image!);
     }
 
@@ -375,38 +381,43 @@ class _EventCard extends StatelessWidget{
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () async {
-          final result = await Navigator.push( 
-            context, 
-            MaterialPageRoute(
-              builder: (_) => EventEditScreen(eventData: event, previousState: event.state,)
-            )
-          );
+          if (!isStats) {
+            final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) =>
+                        EventEditScreen(eventData: event, previousState: event.state)));
 
-          if(result != null){
-            await context.read<EventProvider>().getEvents(state: result);
+            if (result != null) {
+              await context.read<EventProvider>().getEvents(state: result);
+            }
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => EventStatsScreen(eventId: event.id)),
+            );
           }
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
-              ),
-              child: event.image != null && event.image!.isNotEmpty
-              ? Image.memory(
-                imageBytes!,
-                width: double.infinity,
-                height: 160,
-                fit: BoxFit.cover,
-                )
-              : Image.asset(
-                'lib/src/assets/images/LogoLight.png',
-                height: 160,
-                fit: BoxFit.cover,
-              )
-            ),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+                child: event.image != null && event.image!.isNotEmpty
+                    ? Image.memory(
+                        imageBytes!,
+                        width: double.infinity,
+                        height: 160,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.asset(
+                        'lib/src/assets/images/LogoLight.png',
+                        height: 160,
+                        fit: BoxFit.cover,
+                      )),
             const Spacer(),
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -425,11 +436,11 @@ class _EventCard extends StatelessWidget{
               children: [
                 const Icon(Icons.location_on_outlined, size: 16),
                 const SizedBox(width: 6),
-                 Text(
-                    "$venue${city.isNotEmpty ? ' - $city' : ''}",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ) 
+                Text(
+                  "$venue${city.isNotEmpty ? ' - $city' : ''}",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                )
               ],
             ),
             const SizedBox(height: 6),
@@ -443,12 +454,8 @@ class _EventCard extends StatelessWidget{
             ),
             const Spacer(),
             Align(
-              alignment: Alignment.bottomRight,
-              child: Container(
-                margin: const EdgeInsets.all(8),
-                child: Icon(Icons.edit_outlined)
-              )         
-            )
+                alignment: Alignment.bottomRight,
+                child: Container(margin: const EdgeInsets.all(8), child: Icon(Icons.edit_outlined)))
           ],
         ),
       ),

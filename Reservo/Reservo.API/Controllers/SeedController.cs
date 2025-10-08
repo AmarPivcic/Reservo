@@ -275,9 +275,13 @@ namespace Reservo.API.Controllers
             if (!await _context.Orders.AnyAsync())
             {
                 var client = await _context.Users.FirstAsync(u => u.Username == "client1");
-                var ticketType = await _context.TicketTypes.OrderBy(tt => tt.Id).Skip(13).FirstAsync();
+                var events = await _context.Events.ToListAsync();
+                var ticketTypes = await _context.TicketTypes.ToListAsync();
 
-                var order = new Order
+                //---------------------------------------------------
+                // COMPLETED ORDER 1
+                //---------------------------------------------------
+                var completedOrder1 = new Order
                 {
                     OrderDate = new DateTime(2025, 9, 5, 14, 20, 0),
                     TotalAmount = 60,
@@ -286,29 +290,141 @@ namespace Reservo.API.Controllers
                     IsPaid = true,
                     State = "completed"
                 };
-
-                await _context.Orders.AddAsync(order);
+                await _context.Orders.AddAsync(completedOrder1);
                 await _context.SaveChangesAsync();
 
-                var orderDetail = new OrderDetail
+                var completedDetail1 = new OrderDetail
                 {
-                    OrderId = order.Id,
-                    TicketTypeId = ticketType.Id,
+                    OrderId = completedOrder1.Id,
+                    TicketTypeId = ticketTypes[13].Id, // Premium ticket for event 8
                     Quantity = 3,
                     UnitPrice = 20,
                     TotalPrice = 60
                 };
-
-                await _context.OrderDetails.AddAsync(orderDetail);
+                await _context.OrderDetails.AddAsync(completedDetail1);
                 await _context.SaveChangesAsync();
 
                 await _context.Tickets.AddRangeAsync(
-                    new Ticket { QRCode = "QR001", State = "used", OrderDetailId = orderDetail.Id },
-                    new Ticket { QRCode = "QR002", State = "used", OrderDetailId = orderDetail.Id },
-                    new Ticket { QRCode = "QR003", State = "used", OrderDetailId = orderDetail.Id }
+                    new Ticket { QRCode = "QR001", State = "used", OrderDetailId = completedDetail1.Id },
+                    new Ticket { QRCode = "QR002", State = "used", OrderDetailId = completedDetail1.Id },
+                    new Ticket { QRCode = "QR003", State = "used", OrderDetailId = completedDetail1.Id }
                 );
+
+                //---------------------------------------------------
+                // COMPLETED ORDER 2
+                //---------------------------------------------------
+                var completedOrder2 = new Order
+                {
+                    OrderDate = new DateTime(2025, 10, 1, 12, 0, 0),
+                    TotalAmount = 100,
+                    UserId = client.Id,
+                    StripePaymentIntentId = "pi_demo_124",
+                    IsPaid = true,
+                    State = "completed"
+                };
+                await _context.Orders.AddAsync(completedOrder2);
+                await _context.SaveChangesAsync();
+
+                var completedDetail2_1 = new OrderDetail
+                {
+                    OrderId = completedOrder2.Id,
+                    TicketTypeId = ticketTypes[0].Id, // Standard ticket for first event
+                    Quantity = 2,
+                    UnitPrice = 30,
+                    TotalPrice = 60
+                };
+                var completedDetail2_2 = new OrderDetail
+                {
+                    OrderId = completedOrder2.Id,
+                    TicketTypeId = ticketTypes[1].Id, // VIP ticket for first event
+                    Quantity = 2,
+                    UnitPrice = 20,
+                    TotalPrice = 40
+                };
+                await _context.OrderDetails.AddRangeAsync(completedDetail2_1, completedDetail2_2);
+                await _context.SaveChangesAsync();
+
+                await _context.Tickets.AddRangeAsync(
+                    new Ticket { QRCode = "QR004", State = "used", OrderDetailId = completedDetail2_1.Id },
+                    new Ticket { QRCode = "QR005", State = "used", OrderDetailId = completedDetail2_1.Id },
+                    new Ticket { QRCode = "QR006", State = "used", OrderDetailId = completedDetail2_2.Id },
+                    new Ticket { QRCode = "QR007", State = "used", OrderDetailId = completedDetail2_2.Id }
+                );
+
+                //---------------------------------------------------
+                // ACTIVE ORDER 1
+                //---------------------------------------------------
+                var activeOrder1 = new Order
+                {
+                    OrderDate = DateTime.Now.AddDays(-1),
+                    TotalAmount = 50,
+                    UserId = client.Id,
+                    StripePaymentIntentId = "pi_demo_125",
+                    IsPaid = false,
+                    State = "active"
+                };
+                await _context.Orders.AddAsync(activeOrder1);
+                await _context.SaveChangesAsync();
+
+                var activeDetail1 = new OrderDetail
+                {
+                    OrderId = activeOrder1.Id,
+                    TicketTypeId = ticketTypes[2].Id, // Standard ticket for event 2
+                    Quantity = 2,
+                    UnitPrice = 25,
+                    TotalPrice = 50
+                };
+                await _context.OrderDetails.AddAsync(activeDetail1);
+                await _context.SaveChangesAsync();
+
+                await _context.Tickets.AddRangeAsync(
+                    new Ticket { QRCode = "QR008", State = "active", OrderDetailId = activeDetail1.Id },
+                    new Ticket { QRCode = "QR009", State = "active", OrderDetailId = activeDetail1.Id }
+                );
+
+                //---------------------------------------------------
+                // ACTIVE ORDER 2
+                //---------------------------------------------------
+                var activeOrder2 = new Order
+                {
+                    OrderDate = DateTime.Now,
+                    TotalAmount = 60,
+                    UserId = client.Id,
+                    StripePaymentIntentId = "pi_demo_126",
+                    IsPaid = false,
+                    State = "active"
+                };
+                await _context.Orders.AddAsync(activeOrder2);
+                await _context.SaveChangesAsync();
+
+                var activeDetail2 = new OrderDetail
+                {
+                    OrderId = activeOrder2.Id,
+                    TicketTypeId = ticketTypes[4].Id, // Standard ticket for event 5
+                    Quantity = 2,
+                    UnitPrice = 25,
+                    TotalPrice = 50
+                };
+                var activeDetail2_vip = new OrderDetail
+                {
+                    OrderId = activeOrder2.Id,
+                    TicketTypeId = ticketTypes[5].Id, // VIP ticket for event 5
+                    Quantity = 1,
+                    UnitPrice = 50,
+                    TotalPrice = 50
+                };
+                await _context.OrderDetails.AddRangeAsync(activeDetail2, activeDetail2_vip);
+                await _context.SaveChangesAsync();
+
+                await _context.Tickets.AddRangeAsync(
+                    new Ticket { QRCode = "QR010", State = "active", OrderDetailId = activeDetail2.Id },
+                    new Ticket { QRCode = "QR011", State = "active", OrderDetailId = activeDetail2.Id },
+                    new Ticket { QRCode = "QR012", State = "active", OrderDetailId = activeDetail2_vip.Id }
+                );
+
                 await _context.SaveChangesAsync();
             }
+
 
             return Ok("Database seeded successfully.");
         }
