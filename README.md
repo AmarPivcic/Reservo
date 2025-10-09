@@ -41,6 +41,40 @@ The backend API will be available at:
 
 ---
 
+### Environment variables
+
+The following environment variables are required:
+
+- **Backend:** ```JWT_SECRET_KEY```, ```STRIPE_PUBLISHABLE_KEY``` and ```STRIPE_SECRET_KEY```
+- **Frontend (mobile app):** ```STRIPE_PUBLISHABLE_KEY```
+
+#### JWT Key example:
+
+```GqT8M5xVO1yGRJXIyEUeDCkIfaHT13xb93zwjKZZ+5M=```
+
+You can define these variables by either:
+
+1. Creating a ```.env``` file in:
+
+- **Backend:** ```Reservo/Reservo```
+- **Mobile App:** ```Reservo/Reservo/Reservo.UI/reservo_client```
+
+2. Configuring them in the command prompt or PowerShell:
+
+- **For command prompt:**
+
+```bash
+set STRIPE_SECRET_KEY=stripeSecretKey
+```
+
+- **For PowerShell:**
+
+```bash
+$env:STRIPE_SECRET_KEY = "stripeSecretKey"
+```
+
+---
+
 ## Docker Setup
 
 The project uses Docker Compose for containerized deployment. The main services include:
